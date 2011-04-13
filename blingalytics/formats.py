@@ -11,7 +11,7 @@ All formats should derive from the Format class.
 import json
 import locale
 
-from util import epoch
+from blingalytics.utils import epoch
 
 
 class Format(object):

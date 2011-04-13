@@ -21,7 +21,7 @@ from decimal import Decimal
 from dateutil import relativedelta
 
 from blingalytics import formats
-from util import epoch
+from blingalytics.utils import epoch
 
 
 ADD_TYPES = (int, long, Decimal, float)

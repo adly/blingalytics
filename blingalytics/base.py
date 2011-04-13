@@ -17,11 +17,8 @@ import itertools
 import re
 
 from blingalytics import sources, widgets
-from util import cached_table
-from util import redis
 
 
-REDIS_DB = redis.BLINGALYTICS
 DEFAULT_CACHE_TIME = 60 * 30
 
 def get_display_name(class_name):
@@ -150,7 +147,9 @@ class Report(object):
     """
     __metaclass__ = ReportMeta
 
-    def __init__(self, merge=False):
+    def __init__(self, cache, merge=False):
+        self.cache = cache
+        
         # Grab an instance of each of the source types implied by the columns
         self.columns_dict = dict(self.columns)
         report_sources = set([c.source for c in self.columns_dict.values()])
@@ -173,7 +172,7 @@ class Report(object):
             self.clean_user_inputs() # Triggers validation for no inputs
 
     def __repr__(self):
-        return '<Report %s>' % self.unique_id
+        return '<Report %s %s>' % self.unique_id
 
     @property
     def unique_id(self):
@@ -195,7 +194,7 @@ class Report(object):
                 str(self.dirty_inputs[user_input_name])
             )
         user_input_hash = hashlib.sha1(user_input_string).hexdigest()[::2]
-        return '%s:%s' % (self.code_name, user_input_hash)
+        return self.code_name, user_input_hash
 
     @unique_id.setter
     def unique_id(self, value):
@@ -359,15 +358,8 @@ class Report(object):
         """
         # First reset footer totals, in case the same report is run twice
         self._init_footer()
-
-        cached_table.create_table(
-            self.unique_id,
-            self._get_rows(),
-            indexes=self.columns_dict.keys(),
-            footer=self._get_footer,
-            expire=self.cache_time,
-            redis_db=REDIS_DB,
-        )
+        self.cache.create_instance(self.unique_id[0], self.unique_id[1],
+            self._get_rows(), self._get_footer, self.cache_time)
 
     def kill_cache(self, full=False):
         """
@@ -377,30 +369,32 @@ class Report(object):
         report will be cleared, otherwise just the cache data for the current
         user inputs will be cleared.
         """
-        name = full and '%s:*' % self.code_name or self.unique_id
-        cached_table.delete_table(name, redis_db=REDIS_DB)
+        if full:
+            self.cache.kill_report_cache(self.unique_id[0])
+            return
+        self.cache.kill_instance_cache(*self.unique_id)
 
     def is_report_started(self):
         """
         Returns True if the report has begun being stored in cache.
         """
-        return cached_table.table_exists(self.unique_id, redis_db=REDIS_DB)
+        return self.cache.is_instance_started(*self.unique_id)
 
     def is_report_finished(self):
         """
         Returns True if the report is finished being run and cached.
         """
-        return cached_table.table_done(self.unique_id, redis_db=REDIS_DB)
+        return self.cache.is_instance_finished(*self.unique_id)
 
     def report_row_count(self):
         """
         Returns the total number of rows in this report.
         """
-        return cached_table.table_total_rows(self.unique_id, redis_db=REDIS_DB)
+        return self.cache.instance_row_count(*self.unique_id)
 
     def report_timestamp(self):
         """Returns the timestamp when the report was originally run."""
-        return cached_table.get_table_timestamp(self.unique_id, redis_db=REDIS_DB)
+        return self.cache.instance_timestamp(*self.unique_id)
 
     def report_header(self, format=None):
         """
@@ -467,15 +461,9 @@ class Report(object):
         # Query for the raw row data
         sort = sort or self.default_sort
         alpha = getattr(dict(self.columns)[sort[0]], 'sort_alpha', False)
-        raw_rows = cached_table.query_table(
-            self.unique_id,
-            selected_rows=selected_rows,
-            sort=sort,
-            limit=limit,
-            offset=offset,
-            alpha=alpha,
-            redis_db=REDIS_DB,
-        )
+        raw_rows = self.cache.instance_rows(self.unique_id[0],
+            self.unique_id[1], selected=selected_rows, sort=sort, limit=limit,
+            offset=offset)
 
         # Format the row data
         formatted_rows = []
@@ -507,10 +495,7 @@ class Report(object):
         empty for the footer.
         """
         # Query for the footer data
-        footer_row = cached_table.get_table_footer(
-            self.unique_id,
-            redis_db=REDIS_DB,
-        )
+        footer_row = self.cache.instance_footer(*self.unique_id)
 
         # Format the footer data (first is always the row id)
         formatted_footer = [None]

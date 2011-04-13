@@ -100,8 +100,8 @@ class MergeSource(sources.Source):
                 sub_dirty_inputs[sub_key] = value
             report.clean_user_inputs(**sub_dirty_inputs)
             # Override the report's default unique_id
-            report_id = '%s:%s' % (self._report.unique_id, name)
-            report.unique_id = report_id
+            report_id, instance_id = self._report.unique_id
+            report.unique_id = (report_id, '%s_%s' % (instance_id, name))
 
         empty_row = dict(map(lambda a: (a[0], None), self._columns))
         current_key = None
