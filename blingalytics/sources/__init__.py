@@ -18,8 +18,6 @@ subclass Column for any column types the source provides.
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from dateutil import relativedelta
-
 from blingalytics import formats
 from blingalytics.utils import epoch
 
@@ -355,7 +353,7 @@ class MonthRange(KeyRange):
         end = self._resolve_date(self.end, clean_inputs)
         while date <= end:
             yield date
-            date += relativedelta.relativedelta(months=1)
+            date = (date + timedelta(days=31)).replace(day=1)
 
 class EpochKeyRange(KeyRange):
     """
