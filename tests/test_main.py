@@ -8,7 +8,7 @@ from datetime import date
 import unittest
 
 from blingalytics import base, formats, sources
-from blingalytics.caches import local
+from blingalytics.caches import local, redis_cache
 from blingalytics.sources import static
 
 
@@ -21,8 +21,16 @@ class SuperBasicReport(base.Report):
     default_sort = ('id', 'desc')
 
 class BasicTest(unittest.TestCase):
-    def test_basic_functioning(self):
+    def test_basic_local(self):
         report = SuperBasicReport(local.LocalCache())
+        report.kill_cache(full=True)
+        report.run_report()
+        rows = report.report_rows()
+        self.assertEqual(len(rows), 3)
+        self.assertEqual(rows[0][1], '1')
+
+    def test_basic_redis(self):
+        report = SuperBasicReport(redis_cache.RedisCache())
         report.kill_cache(full=True)
         report.run_report()
         rows = report.report_rows()

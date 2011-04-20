@@ -1,5 +1,6 @@
 from datetime import date, datetime
 from decimal import Decimal
+import itertools
 import time
 
 
@@ -14,6 +15,18 @@ def decode(value):
     if decoder is None:
         raise ValueError('Can\'t decode value of unknown type: %s' % value)
     return decoder(value[2:])
+
+def encode_dict(value):
+    return dict(itertools.starmap(
+        lambda k, v: (k, encode(v)),
+        value.iteritems()
+    ))
+
+def decode_dict(value):
+    return dict(itertools.starmap(
+        lambda k, v: (k, decode(v)),
+        value.iteritems()
+    ))
 
 encodings = {
     type(None): lambda value: 'None',

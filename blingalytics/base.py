@@ -347,7 +347,7 @@ class Report(object):
 
     def run_report(self):
         """
-        Builds the cached table in redis.
+        Builds the instance in cache.
         
         This activates all the sources' pre_process, get_rows, and
         post_process methods and compiles the results. It also processes the
@@ -363,7 +363,7 @@ class Report(object):
 
     def kill_cache(self, full=False):
         """
-        Removes the entire stored redis cache for this report.
+        Removes the entire stored cache for this report instance.
 
         If the optional 'full' arguments is True then all cached data for this
         report will be cleared, otherwise just the cache data for the current
