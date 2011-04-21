@@ -50,10 +50,10 @@ from collections import defaultdict
 import heapq
 import itertools
 
+import elixir
 from sqlalchemy.sql import func
 
-from logic.blingalytics3 import sources
-from util import database
+from blingalytics import sources
 
 
 QUERY_LIMIT = 250
@@ -116,7 +116,6 @@ class DatabaseSource(sources.Source):
     def _perform_lookups(self, staged_rows):
         # Performs lookup queries for each table for the staged rows and
         # returns the rows with lookups added
-        session = database.get_session()
         for (pk_attr, pk_column), lookups in self._lookup_columns().items():
             # Collect the pk ids from the staged rows
             pk_column_ids = [
@@ -131,7 +130,7 @@ class DatabaseSource(sources.Source):
             columns = map(lambda column: column.lookup_attr, columns)
 
             # Construct the bulked query
-            q = session.query(pk_attr, *columns)
+            q = elixir.session.query(pk_attr, *columns)
             q = q.filter(pk_attr.in_(pk_column_ids))
             lookup_values = dict(map(
                 lambda row: (row[0], dict(zip(names, row[1:]))),
@@ -160,7 +159,6 @@ class DatabaseSource(sources.Source):
         # formatting: ((key), {row})
         key_column_names = map(lambda a: a[0], self._keys)
         entity = EntityProxy(self._entity, self._column_transforms(), clean_inputs)
-        session = database.get_session()
         queries = []
 
         # Create a query object for each set of report filters
@@ -185,7 +183,7 @@ class DatabaseSource(sources.Source):
                 query_group_bys += column.get_query_group_bys(entity)
 
             # Construct the query
-            q = session.query(*query_columns)
+            q = elixir.session.query(*query_columns)
             for query_modifier in query_modifiers:
                 q = query_modifier(q)
             for query_filter in itertools.chain(table_wide_filters, query_filters):
@@ -532,8 +530,7 @@ class TableKeyRange(sources.KeyRange):
 
     def get_row_keys(self, clean_inputs):
         # Query for the primary keys
-        session = database.get_session()
-        q = session.query(self.pk_column)
+        q = elixir.session.query(self.pk_column)
 
         # Apply the filters to the query
         for query_filter in self.filters:
