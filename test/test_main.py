@@ -10,7 +10,7 @@ import unittest
 
 from blingalytics.caches import local, redis_cache
 
-from tests import entities, reports
+from test import test_entities as entities, test_reports as reports
 
 
 # Set standard thread-wide locale and decimal rounding settings
