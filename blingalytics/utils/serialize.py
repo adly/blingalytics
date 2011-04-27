@@ -50,7 +50,7 @@ decodings = {
     'f': float,
     'b': lambda value: bool(int(value)),
     'd': Decimal,
-    'u': lambda value: _unescape(value.decode('base-64').decode('utf-8')),
+    'u': lambda value: _unescape(value).decode('base-64').decode('utf-8'),
     't': lambda value: datetime.fromtimestamp(float(value)),
     'a': lambda value: date.fromtimestamp(float(value)),
     'l': lambda value: map(decode, value.split('_')),
