@@ -73,6 +73,9 @@ class Widget(object):
             return ' '.join(['%s="%s"' % (k, self._extra_attrs[k]) for k in self._extra_attrs])
         return ''
 
+    def get_choices(self):
+        raise NotImplementedError('Not available for this type of widget.')
+
     def clean(self, user_input):
         """
         Basic user input cleaning example. Subclasses will generally override
@@ -193,6 +196,9 @@ class Select(Widget):
         self.choices = choices
         self._widget_class = 'bl_select'
         super(Select, self).__init__(**kwargs)
+
+    def get_choices(self):
+        return self.choices() if callable(self.choices) else self.choices
 
     def render(self):
         value = self.default() if callable(self.default) else self.default

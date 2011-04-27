@@ -66,6 +66,9 @@ class ReportMeta(type):
         dct['filters'] = report_filters
         dct['widgets'] = report_widgets
 
+        dct['keys'] = dct.get('keys', [])
+        dct['columns'] = dct.get('columns', [])
+
         # Keep a list of all the reports that exist
         report_cls = type.__new__(cls, name, bases, dct)
         cls.report_catalog.append(report_cls)
@@ -164,8 +167,8 @@ class Report(object):
         self._init_footer()
         self.keys = sources.normalize_key_ranges(self.keys)
         self.cache_time = getattr(self, 'cache_time', DEFAULT_CACHE_TIME)
-        self.default_sort = getattr(self, 'default_sort',
-            (self.columns[0][0], 'desc'))
+        fallback_sort = (self.columns[0][0], 'desc') if self.columns else None
+        self.default_sort = getattr(self, 'default_sort', fallback_sort)
         self.dirty_inputs = {}
         self.clean_inputs = {}
         if not merge:
@@ -206,6 +209,19 @@ class Report(object):
         Returns a list of this report's widgets, rendered to HTML.
         """
         return [widget.render() for name, widget in cls.widgets]
+
+    def get_widget_choices(self):
+        widget_choices = {}
+        for key, fil in self.filters:
+            if fil.widget and hasattr(fil.widget, 'choices'):
+                widget_choices[key] = fil.widget.get_choices()
+        return widget_choices
+
+    def override_widget_choices(self, **kwargs):
+        for key, value in kwargs.items():
+            for widget in self.widgets:
+                if widget[0] == key:
+                    widget[1].choices = value
 
     @classmethod
     def get_widgets(cls):
@@ -460,7 +476,6 @@ class Report(object):
         """
         # Query for the raw row data
         sort = sort or self.default_sort
-        alpha = getattr(dict(self.columns)[sort[0]], 'sort_alpha', False)
         raw_rows = self.cache.instance_rows(self.unique_id[0],
             self.unique_id[1], selected=selected_rows, sort=sort, limit=limit,
             offset=offset)

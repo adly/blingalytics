@@ -61,7 +61,7 @@ class MergeSource(sources.Source):
             # if isinstance(merged_report, dict):
             #     ReportMeta.
             if not isinstance(merged_report, base.Report):
-                merged_report = merged_report(merge=True)
+                merged_report = merged_report(self._report.cache, merge=True)
             self._reports[name] = merged_report
 
     def _report_rows_mapper(self, report):
