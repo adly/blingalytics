@@ -1,8 +1,14 @@
 from datetime import date
 
-from blingalytics import base, formats, sources
+from blingalytics import base, formats, sources, widgets
 from blingalytics.sources import database, derived, static
 
+
+ACTIVE_USER_CHOICES = (
+    (None, 'All'),
+    (True, 'Active'),
+    (False, 'Inactive'),
+)
 
 class SuperBasicReport(base.Report):
     filters = []
@@ -13,8 +19,11 @@ class SuperBasicReport(base.Report):
     default_sort = ('id', 'desc')
 
 class BasicDatabaseReport(base.Report):
-    database_entity = 'tests.entities.AllTheData'
-    filters = []
+    database_entity = 'test.entities.AllTheData'
+    filters = [
+        ('user_is_active', database.QueryFilter(lambda entity, user_input: entity.user_is_active == user_input if user_input is not None else None,
+            widget=widgets.Select(label='User Is Active', choices=ACTIVE_USER_CHOICES))),
+    ]
     keys = ('user_id', sources.SourceKeyRange)
     columns = [
         ('user_id', database.GroupBy('user_id', format=formats.Integer(label='User ID', grouping=False))),
