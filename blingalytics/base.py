@@ -476,9 +476,10 @@ class Report(object):
         """
         # Query for the raw row data
         sort = sort or self.default_sort
+        alpha = getattr(dict(self.columns)[sort[0]], 'sort_alpha', False)
         raw_rows = self.cache.instance_rows(self.unique_id[0],
             self.unique_id[1], selected=selected_rows, sort=sort, limit=limit,
-            offset=offset)
+            offset=offset, alpha=alpha)
 
         # Format the row data
         formatted_rows = []

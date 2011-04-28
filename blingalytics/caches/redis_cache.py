@@ -126,7 +126,7 @@ class RedisCache(caches.Cache):
             raise caches.InstanceIncompleteError
         return decode(timestamp)
 
-    def instance_rows(self, report_id, instance_id, selected=None, sort=None, limit=None, offset=None):
+    def instance_rows(self, report_id, instance_id, selected=None, sort=None, limit=None, offset=None, alpha=False):
         table_name = '%s:%s' % (report_id, instance_id)
         if not self.conn.exists('%s:_done:' % table_name):
             raise caches.InstanceIncompleteError
@@ -156,7 +156,7 @@ class RedisCache(caches.Cache):
 
         # Get a list of row ids, sorted by the criteria
         # TODO: Either store alpha t/f per row in redis, or encode numeric values as sortable strings
-        ids = self.conn.sort(ids_key, by=by, desc=desc, start=offset, num=limit, alpha=True)
+        ids = self.conn.sort(ids_key, by=by, desc=desc, start=offset, num=limit, alpha=alpha)
         if temp_key:
             self.conn.delete(temp_key)
 

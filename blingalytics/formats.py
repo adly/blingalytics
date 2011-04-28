@@ -48,7 +48,7 @@ class Format(object):
     label, alignment, hidden state and sortability.
     """
     default_align = 'left'
-    sort_alpha = False
+    sort_alpha = True
 
     def __init__(self, label=None, align=None):
         self.label = label
@@ -119,6 +119,7 @@ class Bling(Format):
     for HTML or '$1234.56' for CSV.
     """
     default_align = 'right'
+    sort_alpha = False
 
     def format_html(self, value):
         if value is None:
@@ -145,6 +146,8 @@ class Epoch(Format):
 
     For example, in the en_US locale, a date is formatted as '01/23/2011'.
     """
+    sort_alpha = False
+
     def format(self, value):
         if value is None:
             return ''
@@ -193,6 +196,7 @@ class Integer(Format):
     will be formatted as '1,234' for HTML or '1234' for CSV.
     """
     default_align = 'right'
+    sort_alpha = False
 
     def __init__(self, grouping=True, **kwargs):
         self.grouping = grouping
@@ -233,6 +237,7 @@ class Percent(Format):
     '12.3%' with a precision of 1.
     """
     default_align = 'right'
+    sort_alpha = False
 
     def __init__(self, precision=1, **kwargs):
         self.precision = precision
@@ -288,6 +293,8 @@ class Boolean(Format):
     
     This column is left-aligned by default.
     """
+    sort_alpha = False
+
     def __init__(self, terms=('Yes', 'No', ''), **kwargs):
         self.true_term, self.false_term, self.none_term = terms
         super(Boolean, self).__init__(**kwargs)
@@ -307,5 +314,7 @@ class JSON(Format):
     JSON-encodable or you'll get a ValueError. This column is left-aligned by
     default.
     """
+    sort_alpha = True
+
     def format(self, value):
         return json.dumps(value)

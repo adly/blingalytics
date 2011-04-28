@@ -164,7 +164,7 @@ class LocalCache(caches.Cache):
         return timestamp.next()[0]
 
     @connection
-    def instance_rows(self, report_id, instance_id, selected=None, sort=None, limit=None, offset=None):
+    def instance_rows(self, report_id, instance_id, selected=None, sort=None, limit=None, offset=None, alpha=False):
         if not self.is_instance_finished(report_id, instance_id):
             raise caches.InstanceIncompleteError
         self.conn.row_factory = sqlite3.Row

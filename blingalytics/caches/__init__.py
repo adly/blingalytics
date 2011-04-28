@@ -29,7 +29,7 @@ class Cache(object):
     def instance_timestamp(self, report_id, instance_id):
         raise NotImplementedError
 
-    def instance_rows(self, report_id, instance_id, selected=None, sort=None, limit=None, offset=None):
+    def instance_rows(self, report_id, instance_id, selected=None, sort=None, limit=None, offset=None, alpha=False):
         raise NotImplementedError
 
     def instance_footer(self, report_id, instance_id):
