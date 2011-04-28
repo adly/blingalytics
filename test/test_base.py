@@ -156,12 +156,12 @@ class TestReportBase(unittest.TestCase):
         self.report.report_rows()
         self.assertEqual(self.mock_cache.instance_rows.call_args, (
             ('basic_database_report', 'd3ae564035be9619ad00'),
-            {'sort': ('average_widget_price', 'desc'), 'selected': None, 'limit': None, 'offset': 0},
+            {'sort': ('average_widget_price', 'desc'), 'selected': None, 'limit': None, 'offset': 0, 'alpha': False},
         ))
-        self.report.report_rows(selected_rows=[1, 2, 3], sort=('whatevs', 'asc'), limit=10, offset=10)
+        self.report.report_rows(selected_rows=[1, 2, 3], sort=('average_widget_price', 'asc'), limit=10, offset=10)
         self.assertEqual(self.mock_cache.instance_rows.call_args, (
             ('basic_database_report', 'd3ae564035be9619ad00'),
-            {'sort': ('whatevs', 'asc'), 'selected': [1, 2, 3], 'limit': 10, 'offset': 10},
+            {'sort': ('average_widget_price', 'asc'), 'selected': [1, 2, 3], 'limit': 10, 'offset': 10, 'alpha': False},
         ))
 
         # Verify report rows formatting
@@ -190,7 +190,7 @@ class TestFormats(unittest.TestCase):
     def test_format_base(self):
         format = formats.Format()
         self.assertEqual(format.align, 'left')
-        self.assertEqual(format.sort_alpha, False)
+        self.assertEqual(format.sort_alpha, True)
         self.assertEqual(format.header_info, {
             'label': None,
             'sortable': True,

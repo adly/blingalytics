@@ -1,7 +1,7 @@
 from datetime import date
 
 from blingalytics import base, formats, sources, widgets
-from blingalytics.sources import database, derived, static
+from blingalytics.sources import database, derived, merge, static
 
 
 ACTIVE_USER_CHOICES = (
@@ -33,3 +33,25 @@ class BasicDatabaseReport(base.Report):
         ('average_widget_price', derived.Value(lambda row: row['_sum_widget_price'] / row['num_widgets'], format=formats.Bling)),
     ]
     default_sort = ('average_widget_price', 'desc')
+
+class BasicMergeReport(base.Report):
+    merged_reports = {
+        'one': BasicDatabaseReport,
+        'two': BasicDatabaseReport,
+    }
+    filters = [
+        ('num_widgets', merge.PostFilter(lambda row: row['double_num_widgets'] > 0)),
+        ('user_is_active', merge.DelegatedFilter(
+            database.QueryFilter(lambda entity, user_input: entity.user_is_active == user_input if user_input is not None else None),
+            widget=widgets.Select(label='User Is Active', choices=ACTIVE_USER_CHOICES))),
+        ('include', merge.ReportFilter('one',
+            widget=widgets.Checkbox(label='Include', default=True))),
+    ]
+    keys = ('user_id', sources.SourceKeyRange)
+    columns = [
+        ('user_id', merge.First(format=formats.Integer(label='ID', grouping=False), footer=False)),
+        ('user_is_active', merge.First(format=formats.Boolean)),
+        ('double_num_widgets', merge.Sum('num_widgets', format=formats.Integer)),
+        ('single_num_widgets', derived.Value(lambda row: row['double_num_widgets'] / 2, format=formats.Integer)),
+    ]
+    default_sort = ('single_num_widgets', 'asc')
