@@ -38,12 +38,4 @@ def get_reports_by_category():
     for report in ReportMeta.report_catalog:
         if hasattr(report, 'category'):
             categories[report.category].append(report)
-    # Company first
-    first = []
-    rest = []
-    for c in categories:
-        if c == 'company':
-            first.append((c, categories[c]))
-        else:
-            rest.append((c, categories[c]))
-    return first + rest
+    return categories
