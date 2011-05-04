@@ -111,42 +111,42 @@ class Report(object):
       the report should be sorted by default. The first value is the column
       name and the second is a string, either 'asc' or 'desc'. Optional,
       defaults to sorting by the first report column descending.
-
+    
     Other attributes may also be allowed or required by the specific sources
     utilized by your report. For details, see those sources' documentation.
     
-    Here is a short example report definition:
+    Here is a short example report definition::
     
-    from logic.blingalytics3 import base, formats, key_ranges, widgets
-    from logic.blingalytics3.sources import database, derived
-    
-    class RevenueReport(base.Report):
-        category = 'revenue'
-        database_entity = 'models.reporting.RevenueModel'
-        cache_time = 60 * 60 * 3 # three hours
+        from logic.blingalytics3 import base, formats, key_ranges, widgets
+        from logic.blingalytics3.sources import database, derived
         
-        filters = [
-            database.QueryFilter(lambda entity: entity.is_delivered == True),
-            database.QueryFilter(
-                lambda entity, user_input: entity.service == user_input \
-                if user_input else None,
-                widget=widgets.Select(label='Service', choices=SERVICES)),
-        ]
-        keys = ('contract_id', key_ranges.SourceKeyRange)
-        columns = [
-            ('contract_id', database.GroupBy('contract_id',
-                format=formats.Integer(label='ID', grouping=False),
-                footer=False)),
-            ('contract_name', database.Lookup('model.contracts.Contract',
-                'name', 'contract_id', format=formats.String)),
-            ('revenue', database.Sum('contract_revenue',
-                format=formats.Bling)),
-            ('_net_revenue', database.Sum('contract_net_revenue')),
-            ('gross_margin', derived.Value(
-                lambda row: row['_net_revenue'] / row['revenue'] * Decimal('100.00'),
-                format=formats.Bling)),
-        ]
-        default_sort = ('gross_margin', 'desc')
+        class RevenueReport(base.Report):
+            category = 'revenue'
+            database_entity = 'models.reporting.RevenueModel'
+            cache_time = 60 * 60 * 3 # three hours
+            
+            filters = [
+                database.QueryFilter(lambda entity: entity.is_delivered == True),
+                database.QueryFilter(
+                    lambda entity, user_input: entity.service == user_input \
+                    if user_input else None,
+                    widget=widgets.Select(label='Service', choices=SERVICES)),
+            ]
+            keys = ('contract_id', key_ranges.SourceKeyRange)
+            columns = [
+                ('contract_id', database.GroupBy('contract_id',
+                    format=formats.Integer(label='ID', grouping=False),
+                    footer=False)),
+                ('contract_name', database.Lookup('model.contracts.Contract',
+                    'name', 'contract_id', format=formats.String)),
+                ('revenue', database.Sum('contract_revenue',
+                    format=formats.Bling)),
+                ('_net_revenue', database.Sum('contract_net_revenue')),
+                ('gross_margin', derived.Value(
+                    lambda row: row['_net_revenue'] / row['revenue'] * Decimal('100.00'),
+                    format=formats.Bling)),
+            ]
+            default_sort = ('gross_margin', 'desc')
     """
     __metaclass__ = ReportMeta
 

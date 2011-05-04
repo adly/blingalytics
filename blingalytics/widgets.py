@@ -180,9 +180,9 @@ class Select(Widget):
     Produces an HTML select for user input.
     
     * choices: A list of two-tuples representing the select options to
-    display. The first value in each tuple should be the "cleaned" value to be
-    returned to the report; the second value in the tuple should be the label
-    to be displayed to the user. Optional, defaults to (). Can be a callable.
+      display. The first value in each tuple should be the "cleaned" value to be
+      returned to the report; the second value in the tuple should be the label
+      to be displayed to the user. Optional, defaults to (). Can be a callable.
     
     This widget's default option uses Python-like indexing into the choices
     list to determine the default selection.
