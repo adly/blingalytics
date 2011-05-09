@@ -175,7 +175,8 @@ class LocalCache(caches.Cache):
         if selected:
             selected_ids = ','.join([str(id) for id in selected])
             query += 'where rowid in (%s) '
-        query += 'order by %s %s ' % sort
+        cast = 'text' if alpha else 'real'
+        query += 'order by cast(%s as %s) %s ' % (sort[0], cast, sort[1])
         if limit:
             query += 'limit %d ' % limit
         if offset:

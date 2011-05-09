@@ -1,6 +1,12 @@
 """
 Database data source implementation.
 
+.. note::
+
+    The database source requires SQLAlchemy to be installed and connected to
+    your database. It also expects your tables to be described using Elixir.
+    See :doc:`/install`.
+
 This source provides an interface for querying data from a table in the
 database. It intentionally does not do any joins for performance reasons.
 Because the reports will often be run over very large data sets, we want to be

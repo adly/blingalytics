@@ -21,7 +21,7 @@ Filter types
 .. autoclass:: blingalytics.sources.database.ColumnTransform
 .. autoclass:: blingalytics.sources.database.QueryFilter
 
-Key Ranges
+Key ranges
 ----------
 
 .. autoclass:: blingalytics.sources.database.TableKeyRange

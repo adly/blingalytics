@@ -13,7 +13,7 @@ powerful business reporting system.
   sorting and more
 
 Thanks to Adly_ for fostering the development of Blingalytics as an
-open-source project. 
+open-source project. Blingalytics is released under the `MIT License`_.
 
 Contents
 --------
@@ -30,3 +30,4 @@ Contents
    formats
 
 .. _Adly: http://adly.com/
+.. _MIT License: http://www.opensource.org/licenses/mit-license

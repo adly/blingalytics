@@ -1,3 +1,13 @@
+"""
+Caching backend that uses Redis for a data store.
+
+.. note::
+
+    The Redis cache requires Redis and its Python bindings to be installed.
+    See :doc:`/install` for details.
+
+"""
+
 from datetime import datetime
 from decimal import Decimal
 import itertools
@@ -11,7 +21,9 @@ from blingalytics.utils.serialize import encode, encode_dict, decode, \
 
 
 class RedisCache(caches.Cache):
-    """A Redis reporting cache."""
+    """
+    A Redis reporting cache.
+    """
     def __init__(self, **kwargs):
         """
         Accepts the same arguments as redis-py client.
