@@ -122,13 +122,25 @@ rows::
     #    [7, '17', '289', 'Useful data coming soon...'],
     # ]
 
+Let's try sorting and limiting the data::
+
+    rows = report.report_rows(sort=('squared', 'asc'), limit=3)
+    # rows = [
+    #    [7, '17', '289', 'Useful data coming soon...'],
+    #    [6, '13', '169', 'Useful data coming soon...'],
+    #    [5, '11', '121', 'Useful data coming soon...'],
+    # ]
+
+There are plenty more options for retrieving specific rows. See
+:meth:`Report.report_rows <blingalytics.base.Report.report_rows>` for more.
+
 Three: pull real data
 ---------------------
 
-.. note::
+Be patient... coming soon.
 
-    This section assumes you already have a database set up, using
-    SQLAlchemy and Elixir to connect and describe the tables. See
-    :doc:`/sources/database` for details.
-
-
+.. .. note::
+.. 
+..     This section assumes you already have a database set up, using
+..     SQLAlchemy and Elixir to connect and describe the tables. See
+..     :doc:`/sources/database` for details.
