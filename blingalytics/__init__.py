@@ -1,9 +1,17 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 """
-Blingalytics: Reporting infrastructure.
+The ``blingalytics`` module provides a few utility methods that are useful for
+retrieving your reports.
 
-This module provides a few basic report categorization helper functions. The
-main Blingalytics docs (and a decent intro and map to the rest of the docs)
-can be found in the base module.
+.. note::
+
+    The report registration method is done using a metaclass set on the
+    :class:`base.Report` class. This means that the modules where you've
+    defined your report classes have to be imported before the methods below
+    will know they exist. You can impore them when your code initializes, or
+    right before you call the utility functions, or whatever — just be sure to
+    do it.
 """
 
 from collections import defaultdict
@@ -13,11 +21,8 @@ from blingalytics.base import ReportMeta
 
 def get_report_by_code_name(code_name):
     """
-    Returns the report class with the given name, or None if none found.
-    
-    Note that the reports you've defined must be imported in order for the
-    metaclass to catalog them. You can do this when your code starts up or
-    just before you call this function; just make sure you do it.
+    Returns the report class with the given ``code_name``, or ``None`` if not
+    found.
     """
     if code_name is None:
         return None
@@ -28,11 +33,8 @@ def get_report_by_code_name(code_name):
 
 def get_reports_by_category():
     """
-    Returns a dict of categories to lists of reports.
-    
-    Note that the reports you've defined must be imported in order for the
-    metaclass to catalog them. You can do this when your code starts up or
-    just before you call this function; just make sure you do it.
+    Returns all known reports, organized by category. The result is returned
+    as a dict of category strings to lists of report classes.
     """
     categories = defaultdict(list)
     for report in ReportMeta.report_catalog:

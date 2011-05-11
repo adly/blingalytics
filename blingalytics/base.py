@@ -1,13 +1,21 @@
 """
-Blingalytics Reporting Infrastructure.
+Reports are used to define a view into your data. At a basic level, reports
+are used to process a data set, format the data, and return tabular results.
+But reports can define many options, including:
 
-The blingalytics project provides a mechanism to run reports over large
-datasets, process the data, format the data, and return tabular results.
+* The name of the report
+* The category of the report
+* How long to cache the report
+* What source data to pull
+* How to manipulate the source data
+* How the output should be formatted
+* What options are given to the user to filter the data
+* The default sorting
 
-For more information on using and writing your own sources, key_ranges,
-formats, and widgets, see the documentation in those modules. For an
-explanation of how to write a report, see the documentation on the Report
-class below.
+The next section describes in detail how to write and interact with your
+own reports. You will also want to check out :doc:`/sources` for details on
+how to pull data; :doc:`/formats` for more on formatting report output; and
+:doc:`/widgets` for details on accepting user filtering options.
 """
 
 import copy
@@ -77,76 +85,101 @@ class ReportMeta(type):
 
 class Report(object):
     """
-    Base class for report definitions.
+    To write a report, you subclass this base Report class and define your own
+    attributes on it. The standard list of available attributes include:
     
-    To define a new report, you create a subclass of this Report class and
-    set various options as attributes on your class. The available attributes
-    are:
-    
-    * category: A string representing the category this report belongs to. The
-      category is used by the get_reports_by_category function to group like
-      reports together. Optional.
-    * display_name: The title of the report as a string. Optional, will be
-      automatically generated from the class name.
-    * code_name: The codename of the report as a string. Optional, will be
-      automatically generated from the class name.
-    * cache_time: The number of seconds this report should remain in cache
-      before expiring. Optional, defaults to 30 minutes.
-    * keys: If you have just one key on your report, this should be a
-      two-tuple of the string column name and a key_range class or instance.
-      If you want do define a report with compound keys, this can be a list of
-      such two-tuples. The key range for your report basically defines the
-      granularity of the rows in the output, and is described in more detail
-      in the key_ranges documentation.
-    * columns: This should be a list of two-tuples, with the first element
-      a string code name of the column, and the second being a column class or
-      instance. These columns define what data is getting pulled from your
-      data sources, how it is calculated, and how it is formatted. For more
-      on these topics, see the documentation in sources and formats.
-    * filters: A list of two-tuples, with the first element being a string
-      name for the filter, and the second being the filter and associated
-      widget. For more detail on filters, see the sources and widgets
-      documentation.
-    * default_sort: A two-tuple representing the column and direction by which
-      the report should be sorted by default. The first value is the column
-      name and the second is a string, either 'asc' or 'desc'. Optional,
-      defaults to sorting by the first report column descending.
-    
-    Other attributes may also be allowed or required by the specific sources
-    utilized by your report. For details, see those sources' documentation.
-    
-    Here is a short example report definition::
-    
-        from logic.blingalytics3 import base, formats, key_ranges, widgets
-        from logic.blingalytics3.sources import database, derived
-        
+    ``category`` *(optional)*
+        A string representing the category this report belongs to. The
+        category is used by the get_reports_by_category function to group like
+        reports together.
+
+    ``display_name`` *(optional)*
+        The title of the report as a string. If not specified, this will be
+        generated automatically based on the class name.
+
+    ``code_name`` *(optional)*
+        The code name of the report as a string. The code name is used to
+        identify this report, for example as part of a key name when caching
+        the report's data. If not specified, this will be generated
+        automatically based on the class name.
+
+    ``cache_time`` *(optional)*
+        The number of seconds this report should remain valid in the cache.
+        If not specified, defaults to ``1800`` (30 minutes).
+
+    ``keys``
+        If your report has just one key, this should be a two-tuple: the name
+        of the key column as a string; and the desired key range class or
+        instance. If you want a report with compound keys, you can specify
+        them as a list of these two-tuples. This is described in detail in
+        :doc:`/key_ranges`.
+
+    ``columns``
+        This should be a list of two-tuples describing your report's columns.
+        The first item of each two-tuple is the name of the column as a
+        string. The second item is a column class or instance. The column
+        definitions do all the heavy lifting of pulling data from sources,
+        manipulating it, and formatting the output. For more details, see
+        :doc:`/sources`.
+
+    ``filters`` *(optional)*
+        A list of two-tuples describing the filters and widgets to present to
+        your users. The first item of each two-tuple is the name of the filter
+        as a string. The second item is a filter instance. The types of
+        filters you can use are specific to the sources you're using; see the
+        relevant source's documentation in :doc:`/sources`. Filters will also
+        generally specify a widget for collecting the user input; for more,
+        see :doc:`/widgets`.
+
+    ``default_sort`` *(optional)*
+        A two-tuple representing the column and direction that the report
+        should be sorted by default. The first item is the name of the column
+        to sort on, as a string. The second is the sort direction, as either
+        ``'asc'`` or ``'desc'``. If not specified, this defaults to sorting
+        by the first column, descending.
+
+    Various sources used by the report may allow or require other attributes
+    to be specified. This will be specified in the documentation for that
+    source.
+
+    Here is a relatively simple example of a report definition::
+
+        from blingalytics import base, formats, widgets
+        from blingalytics.sources import database, derived, key_range
+
         class RevenueReport(base.Report):
-            category = 'revenue'
-            database_entity = 'models.reporting.RevenueModel'
+            display_name = 'Company Revenue'
+            code_name = 'company_revenue_report'
+            category = 'business'
             cache_time = 60 * 60 * 3 # three hours
-            
-            filters = [
-                database.QueryFilter(lambda entity: entity.is_delivered == True),
-                database.QueryFilter(
-                    lambda entity, user_input: entity.service == user_input \
-                    if user_input else None,
-                    widget=widgets.Select(label='Service', choices=SERVICES)),
-            ]
-            keys = ('contract_id', key_ranges.SourceKeyRange)
+
+            database_entity = 'project.models.reporting.RevenueModel'
+            keys = ('product_id', key_range.SourceKeyRange)
             columns = [
-                ('contract_id', database.GroupBy('contract_id',
-                    format=formats.Integer(label='ID', grouping=False),
-                    footer=False)),
-                ('contract_name', database.Lookup('model.contracts.Contract',
-                    'name', 'contract_id', format=formats.String)),
-                ('revenue', database.Sum('contract_revenue',
-                    format=formats.Bling)),
-                ('_net_revenue', database.Sum('contract_net_revenue')),
+                ('product_id', database.GroupBy('product_id',
+                    format=formats.Integer(label='ID', grouping=False), footer=False)),
+                ('product_name', database.Lookup('project.models.products.Product',
+                    'name', 'product_id', format=formats.String)),
+                ('revenue', database.Sum('purchase_revenue', format=formats.Bling)),
+                ('_cost_of_revenue', database.First('product_cost')),
                 ('gross_margin', derived.Value(
-                    lambda row: row['_net_revenue'] / row['revenue'] * Decimal('100.00'),
-                    format=formats.Bling)),
+                    lambda row: (row['revenue'] - row['_cost_of_revenue']) * \\
+                    Decimal('100.00') / row['revenue'], format=formats.Bling)),
+            ]
+            filters = [
+                ('delivered', database.QueryFilter(
+                    lambda entity: entity.is_delivered == True)),
+                ('online_only', database.QueryFilter(
+                    lambda entity, user_input: entity.is_online_purchase == user_input,
+                    widget=widgets.Checkbox(label='Online Purchase'))),
             ]
             default_sort = ('gross_margin', 'desc')
+
+    Once you have defined your report subclass, you instantiate it by passing
+    in a cache instance. This tells the report how and where to cache its
+    processed data. For more, see :doc:`/caches`. Once you have a report
+    instance, you use the following methods to run it, manipulate it, and
+    retrieve its data.
     """
     __metaclass__ = ReportMeta
 
@@ -226,22 +259,27 @@ class Report(object):
     @classmethod
     def get_widgets(cls):
         """
-        Returns a list of this report's widgets, NOT rendered.
-        You'll have to call .render() in the template.
+        Returns a list of this report's widget instances. Calling the widgets'
+        ``render()`` method is left to you.
         """
         return [widget for name, widget in cls.widgets]
 
     def clean_user_inputs(self, **kwargs):
         """
-        Applies the user inputs and returns error messages, if any.
-        
-        These should be passed in as keyword arguments the way they are
-        returned in the GET parameters produced by the widgets' HTML. This
-        method then cleans the widgets and records any errors.
-        
+        Set user inputs on the report, returning a list of any validation
+        errors that occurred.
+
+        The user input should be passed in as keyword arguments the same as
+        they are returned in a GET or POST from the widgets' HTML. The widgets
+        will be cleaned, converting to the appropriate Python objects.
+
         If there were errors, they are returned as a list of strings. If not,
-        returns None and stores the user inputs on the report. Note that this
-        effectively changes the unique_id property of the report.
+        returns ``None`` and stores the user inputs on the report. Note that
+        this effectively changes the ``unique_id`` property of the report.
+
+        If your report has user input widgets, this should be called before
+        run_report; if the report has no widgets, you don't need to call this
+        at all.
         """
         # Don't want to update self.user_inputs until we've validated them all
         dirty_inputs = self.dirty_inputs.copy()
@@ -363,14 +401,12 @@ class Report(object):
 
     def run_report(self):
         """
-        Builds the instance in cache.
-        
-        This activates all the sources' pre_process, get_rows, and
-        post_process methods and compiles the results. It also processes the
-        footer. It passes this all into the caching function for storage.
-        
-        This can be time-consuming, and is best handled as a task outside of
-        the request-response cycle.
+        Processes the report data and stores it in cache.
+
+        Depending on the size of the data and the processing going on, this
+        call can be time-consuming. If you are deploying this as part of a
+        web application, it's recommended that you perform this step outside
+        of the request-response cycle.
         """
         # First reset footer totals, in case the same report is run twice
         self._init_footer()
@@ -379,11 +415,13 @@ class Report(object):
 
     def kill_cache(self, full=False):
         """
-        Removes the entire stored cache for this report instance.
+        By default, this removes or invalidates (depending on the cache store
+        being used) this cached report. If there are other cached versions of
+        this report (with different user inputs) they are left unchanged.
 
-        If the optional 'full' arguments is True then all cached data for this
-        report will be cleared, otherwise just the cache data for the current
-        user inputs will be cleared.
+        If you pass in ``full=True``, this will instead perform a full
+        report-wide cache invalidation. This means any version of this report
+        in cache, regardless of user inputs, will be wiped.
         """
         if full:
             self.cache.kill_report_cache(self.unique_id[0])
@@ -392,44 +430,51 @@ class Report(object):
 
     def is_report_started(self):
         """
-        Returns True if the report has begun being stored in cache.
+        If :meth:`run_report` is currently running, this returns ``True``;
+        otherwise, ``False``.
         """
         return self.cache.is_instance_started(*self.unique_id)
 
     def is_report_finished(self):
         """
-        Returns True if the report is finished being run and cached.
+        If :meth:`run_report` has completed and there is a current cached copy
+        of this report, returns ``True``; otherwise, ``False``.
         """
         return self.cache.is_instance_finished(*self.unique_id)
 
     def report_row_count(self):
         """
-        Returns the total number of rows in this report.
+        Returns the total number of rows in this report instance.
         """
         return self.cache.instance_row_count(*self.unique_id)
 
     def report_timestamp(self):
-        """Returns the timestamp when the report was originally run."""
+        """
+        Returns the timestamp when the report instance was originally computed
+        and cached, as a ``datetime`` object.
+        """
         return self.cache.instance_timestamp(*self.unique_id)
 
-    def report_header(self, format=None):
+    def report_header(self):
         """
-        Returns the header data for this report.
-        
-        Takes an optional keyword argument for the output format.
-        
-        The first column returned by every blingalytics report is a hidden
-        column containing the internal id of the row.
-        
-        The header info is returned as a list of dicts with the formatters'
-        header info. By default, these header dicts contain the following
-        information: 
-        
-        * label: The label to be displayed on the column.
-        * alignment: Either 'left' or 'right' for the column alignment.
-        * hidden: Either True or False to hide or show the column.
-        * sortable: Either True or False for whether to allow sorting on this
-          column.
+        Returns the header data for this report, which describes the columns
+        and how to display them.
+
+        The header info is returned as a list of dicts, one for each column,
+        in order. Certain column types may add other relevant info, but by
+        default, the header dicts will contain the following:
+
+        * ``label``: The human-readable label for the column.
+        * ``alignment``: Either ``'left'`` or ``'right'`` for the preferred
+          text alignment for the column.
+        * ``hidden``: If ``True``, the column is meant for internal use only
+          and should not be displayed to the user; if ``False``, it should be
+          shown.
+        * ``sortable``: If ``True``, this column can be sorted on.
+
+        The first column returned by a Blingalytics report is always a hidden
+        column specifying the row's cache ID. The first column header is for
+        this internal ID.
         """
         header_row = []
 
@@ -450,29 +495,30 @@ class Report(object):
 
     def report_rows(self, selected_rows=None, sort=None, limit=None, offset=0, format='html'):
         """
-        Queries the cached table and returns the rows.
+        Returns the requested rows for the report from cache. There are a
+        number of arguments you can provide to limit, order and format the
+        rows, all of which are optional:
+
+        * ``selected_rows``: If you want to limit your results to a subset of
+          the report's rows, you can provide them as a list of internal cache
+          row IDs (the ID of a row is always returned in the row's first
+          column). Defaults to ``None``, which does not limit the results.
+        * ``sort``: This is a two-tuple to specify the sorting on the table,
+          in the same format as the ``default_sort`` attribute on reports.
+          That is, the first element should be the label of the column and the
+          second should be either ``'asc'`` or ``'desc'``. Defaults to the
+          sorting specified in the report's ``default_sort`` attribute.
+        * ``limit``: The number of rows to return. Defaults to ``None``, which
+          does not limit the results.
+        * ``offset``: The number of rows offset at which to start returning
+          rows. Defaults to ``0``.
+        * ``format``: The type of formatting to use when processing the
+          output. The built-in options are ``'html'`` or ``'csv'``. Defaults
+          to ``'html'``. This is discussed in more detail in :doc:`/formats`.
         
-        The following options are available to sort and format the rows:
-        
-        * selected_rows: If you want to limit your results to only a subset of
-          the report's rows, you can provide them as a list of row ids.
-          Optional, defaults to None.
-        * sort: This is a tuple to specify the sorting on the table, in the
-          same format as the default_sort attribute on reports. That is, the
-          first element should be the label of the column and the second
-          should be either 'asc' or 'desc'. Optional, defaults to the sorting
-          specified in the report's default_sort attribute.
-        * limit: The number of rows to return. Defaults to None, which does
-          not limit the results.
-        * offset: The number of rows offset at which to start returning rows.
-          Defaults to 0.
-        * format: The type of formatting to use when processing the output, as
-          defined in the formats instances. Defaults to 'html'.
-        
-        The rows are returned as a list of lists of values.
-        
-        The first value in each row returned by every blingalytics report is a
-        hidden column containing the internal id of the row.
+        The rows are returned as a list of lists of values. The first column
+        returned by Blingalytics for any report is always a hidden column
+        specifying the row's internal cache ID.
         """
         # Query for the raw row data
         sort = sort or self.default_sort
@@ -501,14 +547,17 @@ class Report(object):
 
     def report_footer(self, format='html'):
         """
-        Returns the footer row for the table.
-        
-        Accepts an optional keyword argument for the output format, which
-        defaults to 'html'.
-        
-        Returns the formatted footer row as a list, including hidden column
-        data. The first column, which is for the internal row ids, is left
-        empty for the footer.
+        Returns the computed footer row for the report. There is one argument
+        to control the formatting of the output:
+
+        * ``format``: The type of formatting to use when processing the
+          output. The built-in options are ``'html'`` or ``'csv'``. Defaults
+          to ``'html'``. This is discussed in more detail in :doc:`/formats`.
+
+        The footer row is returned as a list, including the data for any
+        hidden columns. The first column returned by Blingalytics for any
+        report is reserved for the row's internal cache ID, so the first item
+        returned for the footer will always be ``None``.
         """
         # Query for the footer data
         footer_row = self.cache.instance_footer(*self.unique_id)
