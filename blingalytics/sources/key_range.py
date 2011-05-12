@@ -1,5 +1,7 @@
 """
-Provides many of the standard key ranges, as well as a key column.
+The key range source provides many of the standard key ranges you'll use
+frequently. It also provides a column for outputting the values returned by
+any key range.
 """
 
 from datetime import datetime, timedelta
@@ -21,7 +23,10 @@ class KeysColumn(sources.Column):
 
 class Value(KeysColumn):
     """
-    A column that simply receives the row's key value.
+    Occasionally you may want to simply have a column show the values returned
+    by a given key range, such as with an :class:`IterableKeyRange`. This
+    column requires no special options, and returns the key value from the key
+    whose name matches the name of this column.
     """
     pass
 
@@ -37,7 +42,8 @@ class MonthKeyRange(sources.KeyRange):
     
     The values of the keys returned by this key range are in the form of an
     integer representing the number of full days since the UNIX epoch
-    (Jan. 1, 1970).
+    (Jan. 1, 1970). This is ideal for use with the
+    :class:`Epoch <blingalytics.formats.Epoch>` formatter.
     """
     def __init__(self, start, end):
         self.start = start
@@ -71,7 +77,8 @@ class EpochKeyRange(sources.KeyRange):
     
     The values of the keys returned by this key range are in the form of an
     integer representing the number of full days since the UNIX epoch
-    (Jan. 1, 1970).
+    (Jan. 1, 1970). This is ideal for use with the
+    :class:`Epoch <blingalytics.formats.Epoch>` formatter.
     """
     def __init__(self, start, end):
         self.start = start
@@ -99,12 +106,13 @@ class EpochKeyRange(sources.KeyRange):
 
 class IterableKeyRange(sources.KeyRange):
     """
-    Ensures every value returned by the iterable is in the key range.
+    Ensures every value returned by the iterable is in the key range. It takes
+    one argument, which is the iterable to use.
     
     Note that this iterable must be returned in sorted order. By default, this
     key range will sort the iterable for you before it is returned. However,
     if your iterable is already in sorted order and you want to avoid the
-    overhead of resorting the list, you can set sort_results to False.
+    overhead of resorting the list, can pass in ``sort_results=False``.
     """
     def __init__(self, iterable, sort_results=True):
         self.iterable = iterable
@@ -118,11 +126,9 @@ class IterableKeyRange(sources.KeyRange):
 
 class SourceKeyRange(sources.KeyRange):
     """
-    Doesn't ensure any keys.
-    
-    This key range essentially just allows for each key value returned from
-    the report's sources to be a row. It does not produce any extra rows not
-    returned by the sources.
+    This key range doesn't actually ensure any keys. It simply allows each key
+    value returned by the sources to be a new row. If it isn't returned by a
+    source column, it won't be a row.
     """
     def get_row_keys(self, clean_inputs):
         return []

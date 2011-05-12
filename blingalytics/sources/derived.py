@@ -1,18 +1,11 @@
 """
-Implements a data source pulling from other columns in the same report.
+The derived source allows you to perform arbitrary operations using the data
+returned in columns from other sources.
 
-This source provides a way to do calculations over the other values in a
-report returned by other sources. For example, if you have a report with
-columns for gross revenue and net revenue, both pulled from the database
-source, you could use a derived column to provide a gross margin column by
-performing the operation (net_revenue / gross_revenue * 100).
-
-Columns:
-
-* derived.Value: Performs an arbitrary operation over other columns in a
-  report row and returns the result.
-
-No filters.
+For example, if you have a report with a column for gross revenue and a column
+for net revenue that are both pulled from the database, you could have a
+derived column to display the gross margin by performing the operation
+``(net revenue / gross revenue * 100)``.
 """
 
 import decimal
@@ -34,19 +27,24 @@ class DerivedColumn(sources.Column):
 
 class Value(DerivedColumn):
     """
-    A column that derives its value from other columns in the row.
-    
-    The column takes one positional argument, which should be the function
-    used to derive the column's value. This function will be passed one
-    argument, the row as a dict as compiled from the get_rows method of all
-    the report's sources. (This method is evaluated as part of the 
-    post_process step in source evaluation.) The function should return the
-    derived value.
-    
-    The footer for derived value columns by default performs the same
-    operation over the appropriate footer columns to produce a footer result.
-    This is generally the footer you want for a derived column, as opposed to
-    simply summing or averaging the values in the column.
+    A column that derives its value from other columns in the row. In
+    addition to the standard column options, this takes one positional
+    argument: the function used to derive the value.
+
+    The function you provide will be passed one argument: the row, as pulled
+    from other data sources but before the ``post_process`` step. The row is
+    a dict with the column names as keys. Your function should return just the
+    derived value for this column in the row. The function is often provided
+    as a lambda, but more complex functions can be defined wherever you like.
+
+    Continuing the example from above::
+
+        derived.Value(lambda row: row['net'] / row['gross'] * Decimal('100.00'))
+
+    By default, the footer for this column performs the same operation over
+    the appropriate footer columns. This is generally the footer you want for
+    a derived column, as opposed to simply summing or averaging the values in
+    the column.
     """
     def __init__(self, derive_func, **kwargs):
         self.derive_func = derive_func

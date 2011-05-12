@@ -1,42 +1,36 @@
 """
-Merged reports data source implementation.
+The merge source provides a mechanism for merging and filtering the data
+resulting from two or more other "sub-reports". This can be useful if you need
+to combine results from two different databases or with two different key
+ranges into one report.
 
-This source provides a mechanism for merging and filtering the data resulting
-from two or more other "sub-reports". This can be useful if you need to
-combine results from two different databases or with two different group-by
-clauses into one report.
+When building a merged report, you must specify the reports to merge in a
+report attribute:
 
-Report Attributes:
+* ``merged_reports``: Specifies the sub-reports you want to merge. Provide the
+  reports as a dict with the keys naming the sub-reports and the values being
+  the sub-report classes themselves. For example::
 
-* merged_reports: This report attribute specifies the sub-reports you want to
-  have merged. Specify the reports as a dict with the keys naming the
-  sub-reports and the values being the sub-report classes themselves. For
-  example:
+      merged_reports = {
+          'revenue': ProductRevenueReport,
+          'awesome': UserAwesomenessReport,
+      }
 
-  merged_reports = {
-      'campaign_report': CelebrityPaymentsCampaignReport,
-      'referral_report': CelebrityPaymentsReferralReport,
-  }
+All merge columns take the same positional arguments, which are used to
+specify which columns from sub-reports should be combined into the merge
+column. You can specify the merge columns as follows:
 
-Columns:
+* If no argument is provided, the merge report will merge any columns found
+  with the same name from all sub-reports.
+* If you provide a single string as an argument, the merge report will merge
+  any columns from sub-reports that have that name.
+* To merge columns of various names from various sub-reports, you can specify
+  as many as you like as dotted strings. Each string should be in the form of
+  ``'report_name.column_name'``.
 
-* merge.First: Returns the first value it gets from any merged report for this
-  column.
-* merge.Sum: Adds the results for this column from all merged reports that
-  return a value for it.
-* merge.BoolAnd: Performs a boolean and operation over all the values returned
-  by each of the merged reports for this column.
-* merge.BoolOr: Performs a boolean or operation over all the values returned
-  by each of the merged reports for this column.
-
-Filters:
-
-* merge.DelegatedFilter: Provides one or more filters that are passed through
-  to the underlying sub-reports.
-* merge.PostFilter: Filters whether or not an entire post-merging row should
-  be included in the report output.
-* merge.ReportFilter: Allows filtering of which sub-reports should be included
-  in the merge process at all.
+As a merged report is processed, it will actually run the full end-to-end
+``run-report`` process for each of its sub-reports. It will then aggregate
+the results together based on the columns and filters in the merge report.
 """
 
 import heapq
@@ -151,25 +145,31 @@ class MergeSource(sources.Source):
 
 class DelegatedFilter(sources.Filter):
     """
-    Filtering passed down to sub-reports.
-    
-    This simply takes the standard widget argument. This widget's input is
-    then delegated down to the sub-reports for processing with their filters.
-    Be sure that the filter names are the same on the merge report as they
-    are on the sub-reports, or the widget values will not be delegated.
+    Allows you to display one widget from the merge report, then supply the
+    user input to each of the sub-reports to process as they normally would
+    using the filters defined on each sub-report.
+
+    This filter simply takes the standard widget keyword argument. You also
+    need to ensure that the name of this filter matches the name of any
+    sub-report filters you want to pick up the user input.
     """
     def __init__(self, *args, **kwargs):
         super(DelegatedFilter, self).__init__(**kwargs)
 
 class PostFilter(sources.Filter):
     """
-    Filtering to either include or disclude each merged row.
-    
-    Takes one positional argument, which should be a filtering function. The
-    function takes the merged row as a dict, and optionally the user input if
-    a widget is provided, and should return True or False. If the filtering
-    function returns a truthy value, the row will be included in the report;
-    otherwise, it will be excluded.
+    This filter can be used to disclude entire rows from the output, based on
+    the data in the row from the sub-reports.
+
+    This takes one positional argument, which should be a filtering function.
+    The function takes the merged row as a dict, and optionally the user input
+    if a widget is specified. If the function returns a truthy value, the row
+    will be included; otherwise, it will be skipped. For example::
+
+        merge.PostFilter(
+            lambda row, user_input: row['revenue'] >= user_input,
+            widget=widgets.Select(choices=MIN_REVENUE_CHOICES))
+
     """
     def __init__(self, filter_func, **kwargs):
         self.filter_func = filter_func
@@ -183,14 +183,16 @@ class PostFilter(sources.Filter):
 
 class ReportFilter(sources.Filter):
     """
-    Filters out sub-reports from the merge process.
-    
-    The filter takes one positional argument, which should be a string of the
-    name of the report to be filtered out.
-    
-    This filter requires a widget, and will include the report in the merged
-    output only if the widget's user input is truthy (a checkbox widget is
-    recommended, but anything will work).
+    This filter allows you to selectively include or disclude specific
+    sub-reports from being processed at all. It takes one positional argument:
+    the name of the sub-report from the ``merged_reports`` report attribute
+    from the merge report.
+
+    This filter requires a widget (it would be pretty silly to use this one
+    without a widget). It will include the specified sub-report in the merged
+    output only if the user input is truthy. Generally, a
+    :class:`Checkbox <blingalytics.widgets.Checkbox>` widget is appropriate
+    for this.
     """
     def __init__(self, report_name, **kwargs):
         if 'widget' not in kwargs:
@@ -276,7 +278,8 @@ class MergeColumn(sources.Column):
 
 class First(MergeColumn):
     """
-    Merge column to simply return the first value from any sub-report.
+    Merges sub-report columns by keeping the first value returned by any
+    sub-report. Takes the standard merge column arguments, as described above.
     """
     def merge(self, current, new):
         if current is None:
@@ -285,7 +288,8 @@ class First(MergeColumn):
 
 class Sum(MergeColumn):
     """
-    Merge column to sum the values from each of the sub-reports.
+    Merges sub-report columns by summing the values returned by each
+    sub-report. Takes the standard merge column arguments, as described above.
     """
     def merge(self, current, new):
         if current is None and new is None:
@@ -304,12 +308,12 @@ class Sum(MergeColumn):
 
 class BoolAnd(MergeColumn):
     """
-    Merge column to perform a boolean and on the values from the sub-reports.
-    
-    This column will return True if all the values for the columns from
-    sub-reports are truthy; otherwise, it returns False. None values from
-    sub-reports are considered True so that they essentially don't affect the
-    outcome.
+    Merges sub-report columns by performing a boolean-and operation over the
+    values returned by the sub-reports. This returns ``True`` if *all* the
+    values from sub-reports are truthy; otherwise, it returns ``False``. A
+    ``None`` value is considered ``True`` here so that they essentially are
+    ignored in determining the result. Takes the standard merge column
+    arguments, as described above.
     """
     def merge(self, current, new):
         current = bool(current) if current is not None else True
@@ -326,12 +330,12 @@ class BoolAnd(MergeColumn):
 
 class BoolOr(MergeColumn):
     """
-    Merge column to perform a boolean or on the values from the sub-reports.
-    
-    This column will return True if any of the values for the columns from
-    sub-reports are truthy; otherwise, it returns False. None values from
-    sub-reports are considered False so that they essentially don't affect the
-    outcome.
+    Merges sub-report columns by performing a boolean-or operation over the
+    values returned by the sub-reports. This returns ``True`` if *any* of the
+    values from sub-reports are truthy; otherwise, it returns ``False``. A
+    ``None`` value is considered ``False`` here so that they essentially are
+    ignored in determining the result. Takes the standard merge column
+    arguments, as described above.
     """
     def merge(self, current, new):
         current = bool(current) if current is not None else False

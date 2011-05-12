@@ -1,25 +1,57 @@
 """
-Sources implement an interface between the report and the original data.
-
-Based on the columns provided in the report definition, a report has one
-instance of each type of source. Each of these sources describes how to grab
-source data and manipulate it to produce the report.
+In Blingalytics, sources implement an interface between the report and the
+original source data.
 
 For example, the database source provides an interface for doing sums and
 counts over database columns; the derived source allows you to perform
 calculations over columns from other sources; and the merge source allows
 you to pull data from other reports and produce a sort of meta-report.
 
-All source implementations should provide a subclass of Source; they should
-subclass Filter for any filter types the source provides; and they should
-subclass Column for any column types the source provides.
+When writing a report, the sources you choose to use will provide you with
+some or all of the following:
+
+* **Column types**, which define how and where the source gets the data for
+  that column.
+* **Filters**, which you or the end user (through user input widgets) can use
+  to filter the source data for the report.
+* **Key ranges**, which the report uses to determine which rows to produce.
+
+The documentation for each of the sources provides more in-depth information.
+
+Standard column options
+-----------------------
+
+Most columns will require or accept certain arguments specific to their use
+case, but all column types accept the following optional standard arguments:
+
+* ``format``: A format class or instance that should be used to determine the
+  formatting and display options for this column. If none is provided, the
+  column defaults to being hidden. See :doc:`/formats` for more.
+* ``footer``: Most numeric data columns will calculate a sum for the footer
+  by default. String data columns have no footer by default. Each column's
+  documentation will specify if it has any non-standard footer handling. For
+  any column, if you wish to disable the footer, you can set this to
+  ``False``.
+
+Standard filter options
+-----------------------
+
+Most filters also require or accept arguments specific to their use case, but
+all filters accept the following optional standard arguments:
+
+* ``columns``: If one or more columns are provided, the filter should only be
+  applied to the given columns. Other columns should remain unaffected. The
+  columns may be specified as a string (for just one column) or a list of
+  strings, specifying the column names to filter. Defaults to ``None``, which
+  applies the filter to all columns in the report.
+* ``widget``: A widget class or instance that defines the widget type the user
+  should be shown to input a filter argument. Defaults to ``None``. See
+  :doc:`/widgets` for more.
 """
 
-from datetime import datetime, timedelta
 from decimal import Decimal
 
 from blingalytics import formats
-from blingalytics.utils import epoch
 
 
 ADD_TYPES = (int, long, Decimal, float)

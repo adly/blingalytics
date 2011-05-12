@@ -1,5 +1,6 @@
 """
-Database data source implementation.
+The database source provides an interface for querying data from a table in
+the database.
 
 .. note::
 
@@ -7,49 +8,36 @@ Database data source implementation.
     your database. It also expects your tables to be described using Elixir.
     See :doc:`/install`.
 
-This source provides an interface for querying data from a table in the
-database. It intentionally does not do any joins for performance reasons.
+The source intentionally does not do any joins for performance reasons.
 Because the reports will often be run over very large data sets, we want to be
 sure that running the reports is not prohibitively time-consuming or hogging
-the database. 
+the database.
 
-If you want to do reporting over multiple tables, one option is to pre-join
-the tables into one merged reporting table, and then run the report over that.
-Another quick-fix solution is to use merged reports to run queries over
-multiple tables.
+If you want to do produce reports over multiple tables, the best option is
+generally to pre-join the tables into one merged reporting table, and then
+run the report over that. In "enterprise-ese" this is basically a `star-schema
+table`_ in your database with an `ETL`_ process to populate your data into it.
+The interwebs have plenty to say about this topic, so we'll leave this issue
+in your capable hands.
 
-Report Attributes:
+.. _star-schema table: http://en.wikipedia.org/wiki/Star_schema
+.. _ETL: http://en.wikipedia.org/wiki/Extract,_transform,_load
 
-* database_entity: This report attribute specifies the database table to
+If a whole new reporting database table is too heavy-handed for your use case,
+there are a couple of simpler options. Often all you want is to pull in a bit
+of data from another table, which you can do with the :class:`Lookup` column.
+You can also use the :doc:`/sources/merge` to combine the results of two or
+more reports over two or more database tables.
+
+When using columns from the database source, you'll be expected to provide an
+extra report attribute to specify which table to pull the data from:
+
+* ``database_entity``: This report attribute specifies the database table to
   query. It should be specified as a dotted-path string pointing to an Elixir
-  Entity class. For example:
+  ``Entity`` subclass. For example::
   
-  database_entity = 'model.reporting.ReportInfluencer'
+      database_entity = 'model.reporting.ReportInfluencer'
 
-Key Ranges:
-* database.TableKeyRange: Uses the rows from a database table for keys in a
-  report.
-
-Columns:
-
-* database.GroupBy: Performs a database group by on the given column. You can
-  have more than one in a report if you want to do a multi-group-by. All group
-  by columns should also be report keys.
-* database.Sum: A database sum over the given column.
-* database.Count: A database count over the given column.
-* database.First: A database first operation, which returns the first non-null
-  value.
-* database.BoolAnd: A boolean and database operation.
-* database.BoolOr: A boolean or database operation.
-* database.ArrayAgg: Aggregates database values into an array.
-* database.Lookup: Performs a lookup on another database table by primary key.
-
-Filters: 
-
-* database.QueryFilter: Adds a filter (essentially a SQL "where" clause) to
-  the query.
-* database.ColumnTransform: Performs an arbitrary transformation on a column
-  wherever it is used in the report.
 """
 
 from collections import defaultdict
@@ -262,20 +250,28 @@ class EntityProxy(object):
 
 class QueryFilter(sources.Filter):
     """
-    Provides a filter for the database query.
-    
+    Filters the database query or queries for this report.
+
     This filter expects one positional argument, a function defining the
     filter operation. This function will be passed as its first argument the
-    entity object (technically, it's an EntityProxy object). If a widget is
-    defined for this filter, the function will also be passed a second
-    argument, which is the user input value. The function should return a
-    sqlalchemy binary expression suitable to pass to the filter method of a
-    query. Or the function can return None to indicate no filtering. For
-    example:
-    
-    database.QueryFilter(
-        lambda entity, user_input: entity.publisher_id.in_(user_input),
-        widget=AutocompleteWidget(...))
+    ``Entity`` object. If a widget is defined for this filter, the function
+    will also be passed a second argument, which is the user input value. The
+    function should return a filtering term that can be used to filter a query
+    on that entity. Or, based on the user input, the filter function can
+    return ``None`` to indicate that no filtering should be done.
+
+    More specifically, the returned object should be a
+    ``sqlalchemy.sql.expression._BinaryExpression`` object. You will generally
+    build these in a lambda like so::
+
+        database.QueryFilter(lambda entity: entity.is_active == True)
+
+    Or, with a user input widget::
+
+        database.QueryFilter(
+            lambda entity, user_input: entity.user_id.in_(user_input),
+            widget=Autocomplete(multiple=True))
+
     """
     def __init__(self, filter_func, **kwargs):
         self.filter_func = filter_func
@@ -290,26 +286,29 @@ class QueryFilter(sources.Filter):
 
 class ColumnTransform(sources.Filter):
     """
-    Ensures a database column is altered for every report column that uses it.
-    
-    For example, this is useful if you want to provide a timezone offset
-    option that shifts all date and time columns by a certain number of hours.
-    
+    A transform allows you to alter a database column for every report column
+    or other filter that needs to access it. For example, this can be used to
+    provide a timezone offset option that shifts all date and time columns by
+    a certain number of hours.
+
     This filter expects one positional argument, a function defining the
-    transform operation. This function will be passed the elixir column object
+    transform operation. This function will be passed the Elixir column object
     as its first argument. If a widget is defined for this filter, the
     function will also be passed a second argument, which is the user input
     value. The function should return the altered column object.
 
-    This filter requires the columns keyword argument, which should be a list
-    of strings referring to the columns this transform will be applied to.
-    
-    For example:
-    
-    database.ColumnTransform(
-        lambda column, user_input: column.op('+')(user_input).op('/')(24),
-        columns=('campaign_contract_sent_time', 'campaign_ad_created_time'),
-        widget=widgets.TimezoneSelect(choices=TIMEZONE_CHOICES))
+    This filter **requires** the columns keyword argument, which should be a
+    list of strings referring to the columns this transform will be applied
+    to.
+
+    For example, if you have a database column with the number of hours since
+    the epoch and want to transform it to the number of days since the epoch,
+    with a given number of hours offset for timezone, you can use::
+
+        database.ColumnTransform(
+            lambda column, user_input: column.op('+')(user_input).op('/')(24),
+            columns=['purchase_time', 'user_last_login_time'],
+            widget=widgets.Select(choices=TIMEZONE_CHOICES))
     """
     def __init__(self, filter_func, **kwargs):
         if not len(kwargs.get('columns', [])):
@@ -349,25 +348,34 @@ class DatabaseColumn(sources.Column):
 
 class Lookup(sources.Column):
     """
-    Looks up a value from an arbitrary database table.
-    
+    This column allows you to "cheat" on the no-joins rule and look up a value
+    from an arbitrary database table by primary key.
+
     This column expects several positional arguments to specify how to do the
-    lookup. First is the Elixir Entity object to look up from, specified as a
-    dotted-lookup string. Second is a string for the column attribute on the
-    entity to look up. Third is the column name from the report where the
-    primary key value can be found.
-    
+    lookup:
+
+    * The Elixir ``Entity`` object to look up from, specified as a
+      dotted-string reference.
+    * A string specifying the column attribute on the ``Entity`` you want to
+      look up.
+    * The name of the column in the report which is the primary key to use for
+      the lookup in this other table.
+
     The primary key name on the lookup table is assumed to be 'id'. If it's
-    different, you can pass in the pk_attr keyword argument to specify it.
+    different, you can use the keyword argument:
     
-    The lookup operations can be pretty time-consuming on large datasets, so
-    please try to be judicious in your use of them.
-    
-    Example:
-    
-    database.Lookup(
-        'model.publisher.Publisher', 'name', 'publisher_id',
-        format=formats.String)
+    * ``pk_attr``: The name of the primary key column in the lookup database
+      table. Defaults to ``'id'``.
+
+    For example::
+
+        database.Lookup('project.models.Publisher', 'name', 'publisher_id',
+            format=formats.String)
+
+    Because the lookups are only done by primary key and are bulked up into
+    just a few operations, this isn't as taxing on the database as it could
+    be. But doing a lot of lookups on large datasets can get pretty
+    resource-intensive, so it's best to be judicious.
     """
     source = DatabaseSource
 
@@ -390,23 +398,23 @@ class Lookup(sources.Column):
 
 class GroupBy(DatabaseColumn):
     """
-    Performs a group-by operation in the database.
-    
-    The first argument should be a string naming the column attribute of the
-    database entity. It accepts one keyword argument:
-    
-    * include_null: Whether the database column you're grouping on should
-      filter out or include null values. Default is False.
-    
-    You can use more than one of these in a report, in which case it will be
-    treated as a multi-group-by operation in the database. This column should
-    also be listed in the report's keys attribute.
-    
-    By default, there is no footer for this type of column.
+    Performs a group-by operation on the given database column. It takes one
+    positional argument: a string specifying the column to group by. There is
+    also an optional keyword argument:
+
+    * ``include_null``: Whether the database column you're grouping on should
+      filter out or include the null group. Defaults to ``False``, which will
+      not include the null group.
+
+    Any group-by columns should generally be listed in your report's keys.
+    You are free to use more than one of these in your report, which will be
+    treated as a multi-group-by operation in the database.
+
+    This column does not compute or output a footer.
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, entity_column, **kwargs):
         self.include_null = bool(kwargs.pop('include_null', False))
-        super(GroupBy, self).__init__(*args, **kwargs)
+        super(GroupBy, self).__init__(entity_column, **kwargs)
 
     def get_query_column(self, entity):
         return getattr(entity, self.entity_column)
@@ -431,27 +439,24 @@ class GroupBy(DatabaseColumn):
 
 class Sum(DatabaseColumn):
     """
-    Performs a database sum aggregate operation.
-    
-    The first argument should be a string naming the column attribute of the
-    database entity.
+    Performs a database sum aggregation. The first argument should be a string
+    specifying the database column to sum.
     """
     def get_query_column(self, entity):
         return func.sum(getattr(entity, self.entity_column))
 
 class Count(DatabaseColumn):
     """
-    Performs a database count aggregate operation.
-    
-    The first argument should be a string naming the column attribute of the
-    database entity. Also accepts an extra keyword argument:
-    
-    * distinct: Whether the database should perform a distinct count
-      operation. Defaults to False.
+    Performs a database count aggregation. The first argument should be a
+    string specifying the database column to count on. This also accepts one
+    extra keyword argument:
+
+    * ``distinct``: Whether to perform a distinct count or not. Defaults to
+      ``False``.
     """
-    def __init__(self, *args, **kwargs):
-        self._distinct = bool(kwargs.pop('distinct', False))
-        super(Count, self).__init__(*args, **kwargs)
+    def __init__(self, entity_column, distinct=False, **kwargs):
+        self._distinct = bool(distinct)
+        super(Count, self).__init__(entity_column, **kwargs)
 
     def get_query_column(self, entity):
         column = getattr(entity, self.entity_column)
@@ -461,64 +466,78 @@ class Count(DatabaseColumn):
 
 class First(DatabaseColumn):
     """
-    Performs a database first aggregation to return the first value found.
-    
-    The first argument should be a string naming the column attribute of the
-    database entity.
+    .. note::
+
+        Using this column requires that your database have a ``first``
+        aggregation function. In many databases, you will have to add this
+        aggregate yourself. For example, here is a
+        `PostgreSQL implementation`_.
+
+    .. _PostgreSQL implementation: http://wiki.postgresql.org/wiki/First_(aggregate)
+
+    Performs a database first aggregation to return the first value found. The
+    first argument should be a string specifying the database column.
     """
     def get_query_column(self, entity):
         return func.first(getattr(entity, self.entity_column))
 
 class BoolAnd(DatabaseColumn):
     """
-    Performs a boolean and aggregate operation in the database.
-    
-    This column will return True if all the aggregated values are true;
-    otherwise, it will return False.
-    
-    The first argument should be a string naming the column attribute of the
-    database entity.
+    .. note::
+
+        Using this column requires that your database have a ``bool_and``
+        aggregation function.
+
+    Performs a boolean-and aggregation. This aggregates to true if *all* the
+    aggregated values are true; otherwise, it will aggregate to false. The
+    first argument should be a string specifying the database column to
+    aggregate on.
     """
     def get_query_column(self, entity):
         return func.bool_and(getattr(entity, self.entity_column))
 
 class BoolOr(DatabaseColumn):
     """
-    Performs a boolean or aggregate operation in the database.
-    
-    This column will return True if any of the aggregated values are true;
-    otherwise, it will return False.
-    
-    The first argument should be a string naming the column attribute of the
-    database entity.
+    .. note::
+
+        Using this column requires that your database have a ``bool_or``
+        aggregation function.
+
+    Performs a boolean-or aggregation. This aggregates to true if *any* of the
+    aggregated values are true; otherwise, it will aggregate to false. The
+    first argument should be a string specifying the database column to
+    aggregate on.
     """
     def get_query_column(self, entity):
         return func.bool_or(getattr(entity, self.entity_column))
 
 class ArrayAgg(DatabaseColumn):
     """
-    Performs an array aggregation operation in the database.
-    
-    This essentially compiles a list of all the values in all the rows being
-    aggregated.
-    
-    The first argument should be a string naming the column attribute of the
-    database entity.
+    .. note::
+
+        Using this column requires that your database have an ``array_agg``
+        aggregation function.
+
+    Performs an array aggregation. This essentially compiles a list of all
+    the values in all the rows being aggregated. The first argument should be
+    a string specifying the database column to aggregate.
     """
     def get_query_column(self, entity):
         return func.array_agg(getattr(entity, self.entity_column))
 
 class TableKeyRange(sources.KeyRange):
     """
-    Ensures a key for every row in the database table.
-    
+    This key range ensures that there is a key for every row in the given
+    database table. This is primarily useful to ensure that you get every row
+    ID from an external table in your report.
+
     This key range takes one positional argument, a dotted-string reference to
-    the Entity to pull from. It also takes two optional keyword arguments:
+    the ``Entity`` to pull from. It also takes two optional keyword arguments:
     
-    * pk_column: The column name for the primary key to use from the table.
-      Optional, defaults to 'id'.
-    * filters: Either a single filter or a list of filters. These filters will
-      be applied when pulling the keys from this database table.
+    * ``pk_column``: The column name for the primary key to use from the
+      table. Defaults to ``'id'``.
+    * ``filters``: Either a single filter or a list of filters. These filters
+      will be applied when pulling the keys from this database table.
     """
     def __init__(self, entity, pk_column='id', filters=[]):
         module, name = entity.rsplit('.', 1)
