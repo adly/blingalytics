@@ -1,3 +1,23 @@
+"""
+The local filesystem cache engine provides the simplest, no-fuss option for
+setting up Blingalytics. It stores report caches in a file using SQLite, which
+is included in Python.
+
+While the ease of use is great, the SQLite solution presents a number of
+limitations:
+
+* *Poor concurrency support*. While you can have multiple clients reading from
+  a SQLite database, any write connection requires a lock on the entire
+  database. If you have more than one end user, use :doc:`/caches/redis_cache`
+  instead.
+* *Poor network access*. It's technically possible to set up remote access to
+  your SQLite databse, but it's really not recommended. So if you wanted to
+  have multiple machines accessing the cache, use :doc:`/caches/redis_cache`
+  instead.
+
+You've been warned. Great for dev, poor for everything else.
+"""
+
 from datetime import datetime, timedelta
 import itertools
 import sqlite3
@@ -27,13 +47,18 @@ def connection(func):
     return inner
 
 class LocalCache(caches.Cache):
-    """A local filesystem cache using SQLite."""
+    """
+    Caches the files locally on the filesystem. Takes just one optional
+    argument:
+    
+    * ``database``: This is the file where the cache database will be created.
+      Defaults to ``/tmp/blingalytics_cache``. Note that this cache will not
+      work with SQLite's in-memory database option.
+    """
     METADATA_TABLE = 'metadata'
 
-    def __init__(self, database=None):
+    def __init__(self, database='/tmp/blingalytics_cache'):
         """Specify the database file, or will use default."""
-        if not database:
-            database = '/tmp/blingalytics_cache'
         self.database = database
         self._create_metadata_table()
 

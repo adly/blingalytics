@@ -1,4 +1,4 @@
-Sweet Walkthrough
+Sweet walkthrough
 =================
 
 This intro should get you up and running with a basic Blingalytics
@@ -97,8 +97,8 @@ Two: run the report
 Once you've defined a report, such as ``RealerReport``, you can instantiate
 the report and tell it where to cache the data::
 
-    from blingalytics.caches import local
-    report = RealerReport(local.LocalCache())
+    from blingalytics.caches.local_cache import LocalCache
+    report = RealerReport(LocalCache())
 
 Once you have a report instance, you can run the report::
 

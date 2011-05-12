@@ -1,10 +1,13 @@
-Cache Stores
+Cache stores
 ============
 
 .. automodule:: blingalytics.caches
+
+Available cache engines
+-----------------------
 
 .. toctree::
    :maxdepth: 2
    
    caches/redis_cache
-   caches/local
+   caches/local_cache

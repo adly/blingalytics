@@ -1,5 +1,7 @@
 """
-Caching backend that uses Redis for a data store.
+The Redis-based cache engine provides flexible, powerful storage for computed
+reports. It is currently the recommended caching option for anything beyond
+a simple dev environment.
 
 .. note::
 
@@ -22,7 +24,16 @@ from blingalytics.utils.serialize import encode, encode_dict, decode, \
 
 class RedisCache(caches.Cache):
     """
-    A Redis reporting cache.
+    Caches computed reports in Redis. This takes the same init options as the
+    redis-py_ client. The most commonly used are:
+
+    .. _redis-py: https://github.com/andymccurdy/redis-py
+
+    * ``host``: The host to connect to the redis server on. Defaults to
+      ``'localhost'``.
+    * ``port``: The port to use when connecting. Defaults to ``6379``.
+    * ``db``: Which Redis database to connect to, as an integer. Defaults to
+      ``0``.
     """
     def __init__(self, **kwargs):
         """

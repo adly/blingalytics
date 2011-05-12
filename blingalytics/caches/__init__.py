@@ -1,3 +1,16 @@
+"""
+Cache engines are used as an intermediate store for computed report data.
+Since pulling and processing the data for a report can be computationally
+intensive, this cached storage allows us to sort and page through the
+resulting report very quickly and easily.
+
+Currently, the easiest to get up and running is :doc:`/caches/local_cache`, as
+it has no dependencies outside of Python and simply caches to the local
+filesystem. However, it cannot handle concurrent connections and is generally
+a poor choice outside of the development environment. At the moment, the
+preferred choice for deployment is :doc:`/caches/redis_cache`.
+"""
+
 class InstanceLockError(Exception):
     """Cannot secure a lock on writing the instance to cache."""
 
