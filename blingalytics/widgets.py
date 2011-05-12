@@ -1,9 +1,25 @@
 """
-Widgets provide a mechanism for displaying basic HTML inputs to the user
-and then cleaning the input and passing it into a report.
+Widgets provide a mechanism for displaying basic HTML inputs to the user and
+then cleaning the input and passing it into a report.
 
-All widgets should derive from the base Widget class. See that class's
-documentation for more information.
+All widgets accept the following parameters as keyword arguments. Some widgets
+may accept or require additional arguments, which will be specified in their
+documentation.
+
+* ``label``: The label the user sees for this widget. Defaults to
+  ``'Filter'``.
+* ``default``: A default value that is initially displayed in the widget. This
+  can be a callable, which will be evaluated lazily when rendering the widget.
+  Defaults to ``None``.
+* ``required``: Whether the input can be left blank. If ``True``, a blank
+  value will be added to the errors produced by the report's
+  :meth:`clean_user_inputs <blingalytics.base.Report.clean_user_inputs>`
+  method. By default, user input is not required, and a blank value will be
+  returned as None.
+* ``extra_class``: A string or list of strings that will add extra HTML
+  classes to the rendered widget. Defaults to no extra classes.
+* ``extra_attrs``: A dict of attribute names to values. These will be added as
+  attributes on the rendered widget. Defaults to no extra attributes.
 """
 
 from datetime import date, datetime, timedelta
@@ -31,21 +47,6 @@ class Widget(object):
     All widgets should derive from this class. Generally, a widget class will
     define its own clean and render methods, as well as whatever related
     functionality it requires.
-    
-    By default, widgets accept the following parameters as keyword arguments
-    when being instantiated in report definitions:
-    
-    * label: The label the user sees for this widget. Optional; defaults to
-      'Filter'.
-    * default: A default value that is initially displayed in the widget. 
-      Optional; defaults to None.
-    * required: Whether the input can be left blank. If True, a blank value
-      will raise a ValidationError; if False (the default), a blank value will
-      be returned as None.
-    * extra_class: A string or iterable of strings that will add extra HTML
-      classes to the widget. Optional.
-    * extra_attrs: A dict of attribute name to attribute value that will be
-      rendered into the HTML form element. Optional.
     """
     def __init__(self, label=None, default=None, required=False, extra_class=None, extra_attrs=None):
         self.label = label if label is not None else 'Filter'
@@ -103,10 +104,8 @@ class Widget(object):
 
 class Checkbox(Widget):
     """
-    A checkbox user input widget.
-    
-    Default will be evaluated as checked if it is truthy, or unchecked
-    if it is falsy. Default can be a callable.
+    Produces a checkbox user input widget. The widget's default value will be
+    evaluated as checked if it's truthy and unchecked if it's falsy.
     """
     def render(self):
         value = self.default() if callable(self.default) else self.default
@@ -125,21 +124,24 @@ class Checkbox(Widget):
 
 class DatePicker(Widget):
     """
-    Produces a text box for a datepicker widget interface.
-    
-    * date_format: This is the string passed to the datetime.strptime function
-      to attempt to convert the textual user input into a datetime object.
-      Optional, defaults to '%m/%d/%Y'.
-    
-    This widget is rendered as an HTML text input, and will have a class of
-    'bl_datepicker'. It is left up to the JavaScript to add the appropriate
-    datepicker interface desired.
-    
-    Default can be a string in the format specified by the date_format option,
-    a date or datetime object, or it can be one of these special strings:
-    'today', 'yesterday', 'first_of_month'. The default can also be a
-    callable, in which case it is called and then evaluated as described
-    above.
+    Produces a text input to build into a datepicker widget. It accepts one
+    additional optional argument:
+
+    * ``date_format``: This is the string passed to the ``datetime.strptime``
+      function to convert the textual user input into a datetime object.
+      Defaults to ``'%m/%d/%Y'``.
+
+    Note that this widget is rendered simply as an HTML text input with a
+    class of ``'bl_datepicker'``. It is left up to you to throw a JavaScript
+    datepicker widget on top of it with jQuery or whatever.
+
+    For this widget, the ``default`` argument can be:
+
+    * A string in the format specified by the ``date_format`` option.
+    * A ``date`` or ``datetime`` object.
+    * One of the following special strings: ``'today'``, ``'yesterday'``,
+      ``'first_of_month'``.
+    * A callable that evaluates to any of the previous options.
     """
     def __init__(self, date_format='%m/%d/%Y', **kwargs):
         self.date_format = date_format
@@ -177,22 +179,22 @@ class DatePicker(Widget):
 
 class Select(Widget):
     """
-    Produces an HTML select for user input.
-    
-    * choices: A list of two-tuples representing the select options to
-      display. The first value in each tuple should be the "cleaned" value to be
-      returned to the report; the second value in the tuple should be the label
-      to be displayed to the user. Optional, defaults to (). Can be a callable.
-    
-    This widget's default option uses Python-like indexing into the choices
-    list to determine the default selection.
-    
-    For example, if you have three select options, you can make the second
-    option default by passing in default=1. If you want the last selection to
-    be default, you can pass in default=-1. Default may also be a callable,
-    which will be evaluated before applying the above logic.
+    Produces an select input widget. This takes one additional optional
+    argument:
+
+    * ``choices``: A list of two-tuples representing the select options to
+      display. The first item in each tuple should be the "cleaned" value
+      that will be returned when the user selects this option. The second item
+      should be the label to be displayed to the user for this option. This
+      can also be a callable. Defaults to ``[]``, an empty list of choices.
+
+    For the ``default`` argument for this type of widget, you provide an index
+    into the choices list, similar to how you index into a Python list. For
+    example, if you have three select options, you can default to the second
+    option by passing in ``default=1``. If you want the last selection to
+    be default, you can pass in ``default=-1``.
     """
-    def __init__(self, choices=(), **kwargs):
+    def __init__(self, choices=[], **kwargs):
         self.choices = choices
         self._widget_class = 'bl_select'
         super(Select, self).__init__(**kwargs)
@@ -278,19 +280,20 @@ class TimezoneSelect(Select):
 
 class Autocomplete(Widget):
     """
-    Produces a text box for an autocomplete widget.
-    
-    * default: Unlike most widgets, the default argument is not supported
-      for autocomplete.
-    * multiple: Sets whether this autocomplete should accept just one or
-      multiple inputs. Defaults to False.
-    
-    This widget is rendered as an HTML text input, and will have a class of
-    'bl_autocomplete'. It will also have a class of 'bl_multiple' if it allows
-    multiple inputs. It is left up to the JavaScript to add the appropriate
-    autocompletion interface.
-    
-    The cleaned user input will be a list of integers.
+    Produces a text input for an autocomplete widget. Unlike most widgets,
+    this **does not** accept the ``default`` argument. It takes the following
+    extra argument:
+
+    * ``multiple``: Whether the autocomplete should accept just one or
+      multiple values. When set to ``True``, this will add a class of
+      ``'bl_multiple'`` to the widget. Defaults to ``False``.
+
+    Note that this widget is rendered simply as an HTML text input with a
+    class of ``'bl_autocomplete'``, and optionally a class of
+    ``'bl_multiple'``. It is left up to you to throw a JavaScript
+    autocompletion widget on top of it with jQuery or whatever.
+
+    The cleaned user input will be coerced to a list of integer IDs.
     """
     def __init__(self, multiple=False, **kwargs):
         self.multiple = multiple
