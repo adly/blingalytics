@@ -15,4 +15,3 @@ Formatter types
 .. autoclass:: blingalytics.formats.Epoch
 .. autoclass:: blingalytics.formats.Date
 .. autoclass:: blingalytics.formats.Month
-.. autoclass:: blingalytics.formats.JSON
