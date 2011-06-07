@@ -112,7 +112,7 @@ class Report(object):
         of the key column as a string; and the desired key range class or
         instance. If you want a report with compound keys, you can specify
         them as a list of these two-tuples. This is described in detail in
-        :doc:`/key_ranges`.
+        :doc:`/sources/key_range`.
 
     ``columns``
         This should be a list of two-tuples describing your report's columns.
