@@ -25,8 +25,8 @@ Most columns will require or accept certain arguments specific to their use
 case, but all column types accept the following optional standard arguments:
 
 * ``format``: A format class or instance that should be used to determine the
-  formatting and display options for this column. If none is provided, the
-  column defaults to being hidden. See :doc:`/formats` for more.
+  formatting and display options for this column. If omitted, the column
+  defaults to being hidden. See :doc:`/formats` for more.
 * ``footer``: Most numeric data columns will calculate a sum for the footer
   by default. String data columns have no footer by default. Each column's
   documentation will specify if it has any non-standard footer handling. For

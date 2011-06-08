@@ -107,7 +107,7 @@ class EpochKeyRange(sources.KeyRange):
 class IterableKeyRange(sources.KeyRange):
     """
     Ensures every value returned by the iterable is in the key range. It takes
-    one argument, which is the iterable to use.
+    one required argument, which is the iterable to use.
     
     Note that this iterable must be returned in sorted order. By default, this
     key range will sort the iterable for you before it is returned. However,

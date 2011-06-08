@@ -25,8 +25,9 @@ All formatters accept the following optional keyword arguments:
     ``'en_US'``, monetary values will be formatted as ``'$1,234.00'``. If your
     locale is set to ``'en_GB'``, monetary values will be formatted as
     ``'£1,123.00'``. Your locale is set per Python thread, and should be
-    somewhere that it's guaranteed to run prior to any formatting operations.
-    See Python's documentation for the ``locale`` module for more.
+    set somewhere in your code that guarantees it will be run prior to any
+    formatting operations. See Python's documentation for the ``locale``
+    module for more.
 
 Output formats
 --------------
@@ -138,6 +139,10 @@ class Hidden(Format):
     from the end user. This column will be marked as hidden in the header data
     returned by your report's
     :meth:`report_header <blingalytics.base.Report.report_header>` method.
+
+    A hidden column is used for the internal ID returned with each row. You
+    could also use these yourself to, for example, pass along a URL that gets
+    formatted into a nice-looking link with some front-end JavaScript.
     """
     @property
     def header_info(self):

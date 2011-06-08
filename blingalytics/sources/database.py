@@ -412,8 +412,8 @@ class GroupBy(DatabaseColumn):
 
     This column does not compute or output a footer.
     """
-    def __init__(self, entity_column, **kwargs):
-        self.include_null = bool(kwargs.pop('include_null', False))
+    def __init__(self, entity_column, include_null=False, **kwargs):
+        self.include_null = include_null
         super(GroupBy, self).__init__(entity_column, **kwargs)
 
     def get_query_column(self, entity):

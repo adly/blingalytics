@@ -158,7 +158,7 @@ class DelegatedFilter(sources.Filter):
 
 class PostFilter(sources.Filter):
     """
-    This filter can be used to disclude entire rows from the output, based on
+    This filter can be used to exclude entire rows from the output, based on
     the data in the row from the sub-reports.
 
     This takes one positional argument, which should be a filtering function.
@@ -183,7 +183,7 @@ class PostFilter(sources.Filter):
 
 class ReportFilter(sources.Filter):
     """
-    This filter allows you to selectively include or disclude specific
+    This filter allows you to selectively include or exclude specific
     sub-reports from being processed at all. It takes one positional argument:
     the name of the sub-report from the ``merged_reports`` report attribute
     from the merge report.

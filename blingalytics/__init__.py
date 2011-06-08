@@ -9,7 +9,7 @@ retrieving your reports.
     The report registration method is done using a metaclass set on the
     :class:`base.Report` class. This means that the modules where you've
     defined your report classes have to be imported before the methods below
-    will know they exist. You can impore them when your code initializes, or
+    will know they exist. You can import them when your code initializes, or
     right before you call the utility functions, or whatever — just be sure to
     do it.
 """
