@@ -1,7 +1,7 @@
 from datetime import date
 
-from blingalytics import base, formats, sources, widgets
-from blingalytics.sources import database, derived, merge, static
+from blingalytics import base, formats, widgets
+from blingalytics.sources import database, derived, key_range, merge, static
 
 
 ACTIVE_USER_CHOICES = (
@@ -12,7 +12,7 @@ ACTIVE_USER_CHOICES = (
 
 class SuperBasicReport(base.Report):
     filters = []
-    keys = ('id', sources.EpochKeyRange(date(2011, 1, 1), date(2011, 1, 3)))
+    keys = ('id', key_range.EpochKeyRange(date(2011, 1, 1), date(2011, 1, 3)))
     columns = [
         ('id', static.Value(1, format=formats.Integer)),
     ]
@@ -24,7 +24,7 @@ class BasicDatabaseReport(base.Report):
         ('user_is_active', database.QueryFilter(lambda entity, user_input: entity.user_is_active == user_input if user_input is not None else None,
             widget=widgets.Select(label='User Is Active', choices=ACTIVE_USER_CHOICES))),
     ]
-    keys = ('user_id', sources.SourceKeyRange)
+    keys = ('user_id', key_range.SourceKeyRange)
     columns = [
         ('user_id', database.GroupBy('user_id', format=formats.Integer(label='User ID', grouping=False))),
         ('user_is_active', database.First('user_is_active', format=formats.Boolean(label='Active?'))),
@@ -47,7 +47,7 @@ class BasicMergeReport(base.Report):
         ('include', merge.ReportFilter('one',
             widget=widgets.Checkbox(label='Include', default=True))),
     ]
-    keys = ('user_id', sources.SourceKeyRange)
+    keys = ('user_id', key_range.SourceKeyRange)
     columns = [
         ('user_id', merge.First(format=formats.Integer(label='ID', grouping=False), footer=False)),
         ('user_is_active', merge.First(format=formats.Boolean)),

@@ -3,6 +3,7 @@ from decimal import Decimal
 import unittest
 
 from blingalytics import formats, sources, widgets
+from blingalytics.sources import key_range
 from mock import Mock
 
 from test import reports
@@ -45,36 +46,36 @@ class TestSourceBases(unittest.TestCase):
         self.assertEqual(col.increment_footer(None, 'string'), None)
 
     def test_basic_key_ranges(self):
-        key_range = sources.SourceKeyRange()
-        self.assertEqual(key_range.get_row_keys([]), [])
-        key_range = sources.EpochKeyRange(datetime(2010, 1, 31), datetime(2010, 2, 1))
-        self.assertEqual(list(key_range.get_row_keys([])), [14640, 14641])
-        key_range = sources.EpochKeyRange(date(2010, 12, 31), date(2011, 1, 2))
-        self.assertEqual(list(key_range.get_row_keys([])), [14974, 14975, 14976])
-        key_range = sources.EpochKeyRange(date(2011, 1, 2), date(2010, 12, 31))
-        self.assertRaises(ValueError, list, key_range.get_row_keys([]))
-        key_range = sources.EpochKeyRange('start', 'end')
+        keys = key_range.SourceKeyRange()
+        self.assertEqual(keys.get_row_keys([]), [])
+        keys = key_range.EpochKeyRange(datetime(2010, 1, 31), datetime(2010, 2, 1))
+        self.assertEqual(list(keys.get_row_keys([])), [14640, 14641])
+        keys = key_range.EpochKeyRange(date(2010, 12, 31), date(2011, 1, 2))
+        self.assertEqual(list(keys.get_row_keys([])), [14974, 14975, 14976])
+        keys = key_range.EpochKeyRange(date(2011, 1, 2), date(2010, 12, 31))
+        self.assertRaises(ValueError, list, keys.get_row_keys([]))
+        keys = key_range.EpochKeyRange('start', 'end')
         start_widget = widgets.DatePicker()
         end_widget = widgets.DatePicker()
-        self.assertEqual(list(key_range.get_row_keys(
+        self.assertEqual(list(keys.get_row_keys(
             {'start': start_widget.clean('1/31/2010'), 'end': end_widget.clean('2/1/2010')})),
             [14640, 14641])
-        self.assertRaises(ValueError, list, key_range.get_row_keys({'othername': start_widget.clean('1/31/2010'), 'end': end_widget.clean('2/1/2010')}))
+        self.assertRaises(ValueError, list, keys.get_row_keys({'othername': start_widget.clean('1/31/2010'), 'end': end_widget.clean('2/1/2010')}))
 
     def test_key_range_normalization(self):
-        keys = sources.normalize_key_ranges(('id', sources.SourceKeyRange))
+        keys = sources.normalize_key_ranges(('id', key_range.SourceKeyRange))
         self.assertEqual(len(keys), 1)
         self.assertEqual(len(keys[0]), 2)
         self.assertEqual(keys[0][0], 'id')
-        self.assert_(isinstance(keys[0][1], sources.SourceKeyRange))
+        self.assert_(isinstance(keys[0][1], key_range.SourceKeyRange))
         keys = sources.normalize_key_ranges([
-            ('id', sources.SourceKeyRange),
-            ('date', sources.EpochKeyRange('start', 'end')),
+            ('id', key_range.SourceKeyRange),
+            ('date', key_range.EpochKeyRange('start', 'end')),
         ])
         self.assertEqual(len(keys), 2)
         self.assertEqual(len(keys[0]), 2)
         self.assertEqual(len(keys[1]), 2)
         self.assertEqual(keys[0][0], 'id')
         self.assertEqual(keys[1][0], 'date')
-        self.assert_(isinstance(keys[0][1], sources.SourceKeyRange))
-        self.assert_(isinstance(keys[1][1], sources.EpochKeyRange))
+        self.assert_(isinstance(keys[0][1], key_range.SourceKeyRange))
+        self.assert_(isinstance(keys[1][1], key_range.EpochKeyRange))
