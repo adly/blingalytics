@@ -10,7 +10,7 @@ setup(
     author_email='jmschenck@gmail.com',
     url='http://github.com/adly/blingalytics',
     description='Blingalytics is a tool for building reports from your data.',
-    long_description=readme,
+    long_description=readme.decode('utf-8'),
     license='',
     packages=[
         'blingalytics',
