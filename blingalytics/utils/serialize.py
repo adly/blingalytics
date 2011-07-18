@@ -53,7 +53,7 @@ decodings = {
     'u': lambda value: _unescape(value).decode('base-64').decode('utf-8'),
     't': lambda value: datetime.fromtimestamp(float(value)),
     'a': lambda value: date.fromtimestamp(float(value)),
-    'l': lambda value: map(decode, value.split('_')),
+    'l': lambda value: map(decode, map(_unescape, value.split('_'))),
     'h': lambda value: dict(map(lambda a: map(decode, map(_unescape, a.split(':'))), value.split('_'))),
 }
 
