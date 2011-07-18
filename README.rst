@@ -6,7 +6,7 @@ powerful business reporting system.
 
 * Define new reports quickly by writing simple Python
 
-* Pluggable data source and caching structure — use the built-in modules or
+* Pluggable data source and caching structure - use the built-in modules or
   write one for your own particular needs
 
 * Output your report data to powerful HTML/JavaScript tables, with paging,
