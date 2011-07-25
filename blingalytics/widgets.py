@@ -204,15 +204,15 @@ class Select(Widget):
 
     def render(self):
         value = self.default() if callable(self.default) else self.default
-        self.choices = self.choices() if callable(self.choices) else self.choices
+        choices = self.get_choices()
         options = ''
-        for i, (choice_value, choice_label) in enumerate(self.choices):
+        for i, (choice_value, choice_label) in enumerate(choices):
             # Handle positive/negative indexing for default value
             selected = ''
             if value is not None:
                 if value >= 0 and value == i:
                     selected = 'selected'
-                elif value < 0 and len(self.choices) + value == i:
+                elif value < 0 and len(choices) + value == i:
                     selected = 'selected'
             options += SELECT_OPTION % {
                 'form_value': i,
@@ -234,8 +234,8 @@ class Select(Widget):
             i = int(user_input)
         except (ValueError, TypeError):
             raise ValidationError('Please choose a valid option.')
-        self.choices = callable(self.choices) and self.choices() or self.choices
-        return self.choices[i][0]
+        choices = self.get_choices()
+        return choices[i][0]
 
 class Multiselect(Select):
     """
