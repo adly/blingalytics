@@ -23,6 +23,7 @@ documentation.
 """
 
 from datetime import date, datetime, timedelta
+import re
 
 
 INPUT = '''
@@ -57,6 +58,9 @@ class Widget(object):
             self.extra_class = (extra_class,)
         else:
             self.extra_class = extra_class
+
+    def get_unique_id(self, dirty_inputs):
+        return '%s|%s' % (self.form_name, dirty_inputs.get(self.form_name, ''))
 
     @property
     def form_name(self):
@@ -198,6 +202,18 @@ class Select(Widget):
         self.choices = choices
         self._widget_class = 'bl_select'
         super(Select, self).__init__(**kwargs)
+
+    def get_unique_id(self, dirty_inputs):
+        '''
+        Generates a unique id for the widget.
+        '''
+        choices = self.get_choices()
+        vals = ''
+        for val in sorted(dict(choices).keys()):
+            if re.search('[|:]', repr(val)):
+                raise ValueError("%s widget choice values can't contain '|' or ':'. Provided: %s" % (self.label, repr(val)))
+            vals += '%s,' % repr(val)
+        return '%s|%s|%s' % (self.form_name, dirty_inputs.get(self.form_name, ''), vals)
 
     def get_choices(self):
         return self.choices() if callable(self.choices) else self.choices

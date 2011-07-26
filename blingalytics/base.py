@@ -223,12 +223,11 @@ class Report(object):
             return self._unique_id_override
 
         # Otherwise, determine it automatically from the inputs
-        user_input_string = ''
-        for user_input_name in sorted(self.dirty_inputs):
-            user_input_string += '%s:%s,' % (
-                user_input_name,
-                str(self.dirty_inputs[user_input_name])
-            )
+        widget_unique_ids = []
+        for name, widget in self.widgets:
+            widget_unique_ids.append(widget.get_unique_id(self.dirty_inputs))
+        user_input_string = ":".join(sorted(widget_unique_ids))
+
         user_input_hash = hashlib.sha1(user_input_string).hexdigest()[::2]
         return self.code_name, user_input_hash
 
