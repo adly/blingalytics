@@ -6,11 +6,17 @@ powerful business reporting system.
 
 * Define new reports quickly by writing simple Python
 
-* Pluggable data source and caching structure - use the built-in modules or
-  write one for your own particular needs
+* Pluggable data source infrastructure — use the built-in modules or write
+  one for your own particular needs
 
-* Output your report data to powerful HTML/JavaScript tables, with paging,
-  sorting and more
+* Powerful caching system allows for fast and easy sorting and paging
+
+Whatever business initiatives and performance indicators you want to look at,
+Blingalytics offers the tools you need to slice and dice your data. Maybe you
+want to see the number of retweets your clients get over time. Or maybe you
+simply want to track your revenue and other financial indicators. Perhaps you
+need to track how many virtual tractors your virtual farmers are purchasing.
+Blingalytics can probably help.
 
 For the full documentation, please visit it over on `Read the Docs`_. Or if
 you're feeling particularly do-it-yourself today, you can always build the
