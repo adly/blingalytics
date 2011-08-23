@@ -1,2 +1,90 @@
+/*
+* jQuery UI CSS Framework
+* Copyright (c) 2009 AUTHORS.txt (http://jqueryui.com/about)
+* Dual licensed under the MIT (MIT-LICENSE.txt) and GPL (GPL-LICENSE.txt) licenses.
+*/
+.ui-helper-clearfix:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
+.ui-helper-clearfix { display: inline-block; }
+/* required comment for clearfix to work in Opera \*/
+* html .ui-helper-clearfix { height:1%; }
+.ui-helper-clearfix { display:block; }
+/* end clearfix */
+.ui-state-disabled { cursor: default !important; }
+.ui-icon { display: block; text-indent: -99999px; overflow: hidden; background-repeat: no-repeat; }
+.ui-widget-header { border: 1px solid #aaaaaa; background: #cccccc url(http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.0/themes/smoothness/images/ui-bg_highlight-soft_75_cccccc_1x100.png) 50% 50% repeat-x; color: #222222; font-weight: bold; }
+.ui-state-default, .ui-widget-content .ui-state-default { border: 1px solid #d3d3d3; background: #e6e6e6 url(http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.0/themes/smoothness/images/ui-bg_glass_75_e6e6e6_1x400.png) 50% 50% repeat-x; font-weight: normal; color: #555555; outline: none; }
+.ui-state-disabled, .ui-widget-content .ui-state-disabled { opacity: .35; filter:Alpha(Opacity=35); background-image: none; }
+.ui-icon { width: 16px; height: 16px; background-image: url(http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.0/themes/smoothness/images/ui-icons_222222_256x240.png); }
+.ui-widget-content .ui-icon {background-image: url(http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.0/themes/smoothness/images/ui-icons_222222_256x240.png); }
+.ui-widget-header .ui-icon {background-image: url(http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.0/themes/smoothness/images/ui-icons_222222_256x240.png); }
+.ui-state-default .ui-icon { background-image: url(http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.0/themes/smoothness/images/ui-icons_888888_256x240.png); }
+.ui-state-hover .ui-icon, .ui-state-focus .ui-icon {background-image: url(http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.0/themes/smoothness/images/ui-icons_454545_256x240.png); }
+.ui-state-active .ui-icon {background-image: url(http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.0/themes/smoothness/images/ui-icons_454545_256x240.png); }
+.ui-state-highlight .ui-icon {background-image: url(http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.0/themes/smoothness/images/ui-icons_2e83ff_256x240.png); }
+.ui-state-error .ui-icon, .ui-state-error-text .ui-icon {background-image: url(http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.0/themes/smoothness/images/ui-icons_cd0a0a_256x240.png); }
+.ui-icon-carat-2-n-s { background-position: -128px 0; }
+.ui-icon-triangle-1-s { background-position: -64px -16px; }
+.ui-icon-triangle-1-n { background-position: 0 -16px; }
+.ui-corner-tl { -moz-border-radius-topleft: 4px; -webkit-border-top-left-radius: 4px; }
+.ui-corner-tr { -moz-border-radius-topright: 4px; -webkit-border-top-right-radius: 4px; }
+.ui-corner-bl { -moz-border-radius-bottomleft: 4px; -webkit-border-bottom-left-radius: 4px; }
+.ui-corner-br { -moz-border-radius-bottomright: 4px; -webkit-border-bottom-right-radius: 4px; }
+.ui-corner-top { -moz-border-radius-topleft: 4px; -webkit-border-top-left-radius: 4px; -moz-border-radius-topright: 4px; -webkit-border-top-right-radius: 4px; }
+.ui-corner-bottom { -moz-border-radius-bottomleft: 4px; -webkit-border-bottom-left-radius: 4px; -moz-border-radius-bottomright: 4px; -webkit-border-bottom-right-radius: 4px; }
+.ui-corner-right {  -moz-border-radius-topright: 4px; -webkit-border-top-right-radius: 4px; -moz-border-radius-bottomright: 4px; -webkit-border-bottom-right-radius: 4px; }
+.ui-corner-left { -moz-border-radius-topleft: 4px; -webkit-border-top-left-radius: 4px; -moz-border-radius-bottomleft: 4px; -webkit-border-bottom-left-radius: 4px; }
+.ui-corner-all { -moz-border-radius: 4px; -webkit-border-radius: 4px; }
+/* END jQuery UI CSS */
+
+/* A few things from jQuery DataTable plugin css, and a few of our own */
+.bl_container { font-family: Arial,sans-serif; font-size: 13px; color: #444; }
+.bl_table thead th { color: #000; }
 .bl_table .bl_hidden { display: none; }
-.bl_table td.num { text-align: right; }
+.bl_table { text-align: left; margin: 8px 0; }
+.bl_table .num { text-align: right; }
+.dataTables_wrapper .bl_table tfoot { background: #fff; }
+.bl_table td { border-right: 1px solid #f2f2f2; }
+.bl_table, .bl_table th { border: 1px solid #e1e1e1; }
+.bl_table thead th { border-bottom: 3px solid #e8e8e8; }
+.bl_table tfoot th { border-top: 2px solid #e8e8e8; }
+.dataTables_wrapper table.display thead th.sorting { border-bottom-color: #b1d1e8; background-color: #e1eff6;}
+
+.paging_two_button .ui-button { float: left; cursor: pointer; * cursor: hand; }
+.paging_full_numbers .ui-button { padding: 2px 6px; margin: 0; cursor: pointer; * cursor: hand; }
+.dataTables_paginate .ui-button { margin-right: -0.1em !important; }
+.paging_full_numbers { width: 350px !important; margin-top: 2px; }
+.dataTables_wrapper .ui-toolbar { font-size: 11px; color: #999; background: none; border: none; padding: 0 2px; font-weight: normal; }
+.dataTables_paginate { width: auto; }
+.dataTables_info { padding-top: 3px; }
+.dataTables_wrapper table.display thead th { padding: 8px 0 4px 10px; cursor: pointer; * cursor: hand; }
+
+.dataTables_wrapper table.display th { background: #fff; }
+.dataTables_wrapper table.display thead th div.DataTables_sort_wrapper { position: relative; padding-right: 20px; }
+.dataTables_wrapper table.display thead th div.DataTables_sort_wrapper span { position: absolute; top: 50%; margin-top: -8px; right: 0; }
+
+.dataTables_wrapper { position: relative; clear: both; }
+.dataTables_processing { position: absolute; top: 0; left: 50%; width: 250px; margin-left: -125px; border: 1px solid #ddd; text-align: center; color: #999; font-size: 11px; padding: 2px 0; }
+.dataTables_length { width: 40%; float: right; text-align: right; }
+.dataTables_info { width: 50%; float: left; }
+.dataTables_paginate { float: right; text-align: right; }
+.paginate_disabled_previous, .paginate_enabled_previous, .paginate_disabled_next, .paginate_enabled_next { height: 19px; width: 19px; margin-left: 3px; float: left; }
+
+.dataTables_wrapper table.display { clear: both; border-collapse: collapse; width: 100%; }
+.dataTables_wrapper table.display tr.heading2 td { border-bottom: 1px solid #aaa; }
+.dataTables_wrapper table.display td, .dataTables_wrapper table.display th { padding: 3px 10px; }
+.dataTables_wrapper table.display td.center { text-align: center; }
+
+.dataTables_scroll { clear: both; }
+.dataTables_wrapper .top, .dataTables_wrapper .bottom { padding: 15px; background-color: #F5F5F5; border: 1px solid #CCCCCC; }
+.dataTables_wrapper .top .dataTables_info { float: none; }
+.dataTables_wrapper .clear { clear: both; }
+.dataTables_empty { text-align: center; }
+
+.dataTables_wrapper tr.even { background-color: #edf5ff; }
+.dataTables_wrapper tr.odd { background-color: #fff; }
+.dataTables_wrapper tr.even td.sorting_1, .dataTables_wrapper tr.even td.sorting_2, .dataTables_wrapper tr.even td.sorting_3 { background-color: #dbeaff; }
+.dataTables_wrapper tr.odd td.sorting_1, .dataTables_wrapper tr.odd td.sorting_2, .dataTables_wrapper tr.odd td.sorting_3 { background-color: #edf5ff; }
+
+.bl_container .widgets { list-style-type: none; padding: 0; margin: 0; }
+.bl_container .widgets li { clear: left; margin: 4px 0; }
+.bl_container .widgets label { width: 120px; float: left; }
