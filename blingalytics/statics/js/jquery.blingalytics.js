@@ -16,7 +16,7 @@
       $.getJSON(settings.url, params, function(metadata) {
         if (metadata.errors.length) {
           errors_ul.empty();
-          for (var i in metadata.errors) {
+          for (var i = 0; i < metadata.errors.length; i++) {
             errors_ul.append('<li>' + metadata.errors[i] + '</li>');
           }
           return;
@@ -27,7 +27,7 @@
         var classes = [];
         var thead = '';
         var tfoot = '';
-        for (var i in headers) {
+        for (var i = 0; i < headers.length; i++) {
           columns.push({
             'bSearchable': false,
             'bSortable': headers[i].sortable,
@@ -49,7 +49,7 @@
         // Construct the widgets
         var widgets_container = $('<ul class="widgets"></ul>');
         container.append(widgets_container);
-        for (var i in metadata.widgets) {
+        for (var i = 0; i < metadata.widgets.length; i++) {
           widgets_container.append('<li>' + metadata.widgets[i] + '</li>');
         }
         $('<button>Run Report</button>').appendTo(widgets_container).click(function() {
@@ -82,7 +82,7 @@
           iDisplayLength: 25,
           fnRowCallback: function(nRow, aData, iDisplayIndex) {
             var children = nRow.children;
-            for (var i in children) {
+            for (var i = 0; i < children.length; i++) {
               children[i].className += classes[i];
             }
             return nRow;
@@ -92,17 +92,17 @@
             $.getJSON(url, aoData, function(data) {
               if (data.errors.length) {
                 errors_ul.empty();
-                for (var i in data.errors) {
+                for (var i = 0; i < data.errors.length; i++) {
                   errors_ul.append('<li>' + data.errors[i] + '</li>');
                 }
                 fnCallback({
                   'iTotalRecords': 0,
                   'iTotalDisplayRecords': 0,
-                  'aaData': [],
+                  'aaData': []
                 });
               } else {
                 var footer_tds = table.find('tfoot th');
-                for (var i in data.footer) {
+                for (var i = 0; i < data.footer; i++) {
                   footer_tds.eq(i).html(data.footer[i]);
                 }
                 fnCallback(data);
@@ -112,9 +112,7 @@
           fnHeaderCallback: function(nHead, aasData, iStart, iEnd, aiDisplay) {
             // Fix missing header sorting classes
             var head = $(nHead);
-            console.log(head.find('th'));
             head.find('th').removeClass('sorting');
-            console.log(head.find('th:has(.ui-icon-triangle-1-n, .ui-icon-triangle-1-s)'));
             head.find('th:has(.ui-icon-triangle-1-n, .ui-icon-triangle-1-s)').addClass('sorting');
           }
         });
