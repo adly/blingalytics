@@ -7,6 +7,33 @@ from blingalytics.caches import local_cache
 DEFAULT_CACHE = local_cache.LocalCache()
 
 def report_response(params, runner=None, cache=DEFAULT_CACHE):
+    """
+    This frontend helper function is meant to be used in your
+    request-processing code to handle all AJAX responses to the Blingalytics
+    JavaScript frontend.
+
+    In its most basic usage, you just pass in the request's GET parameters
+    as a ``dict``. This will run the report, if required, and then pull the
+    appropriate data. It will be returned as a JSON string, which your
+    request-processing code should return as an AJAX response. This will vary
+    depending what web framework you're using, but it should be pretty simple.
+
+    The function also accepts two options:
+
+    ``runner`` *(optional)*
+        If you want your report to run asynchronously so as not to tie up
+        your web server workers while processing requests, you can specify a
+        runner function. This should be a function that will initiate your
+        async processing on a tasks machine or wherever. It will be passed
+        two arguments: the report code_name, as a string; and the remaining
+        GET parameters so you can process user inputs. By default, no runner
+        is used.
+
+    ``cache`` *(optional)*
+        By default, this will use a local cache stored at
+        ``/tmp/blingalytics_cache``. If you would like to use a different
+        cache, simply provide the cache instance.
+    """
     # Find and instantitate the report class
     params = dict((k, v) for k, v in params.items())
     report_code_name = params.pop('report', None)

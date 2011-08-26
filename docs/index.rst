@@ -14,6 +14,8 @@ powerful business reporting system.
 
 * Powerful caching system allows for fast and easy sorting and paging
 
+* Drop-in web frontend for running and displaying reports to your users
+
 Whatever business initiatives and performance indicators you want to look at,
 Blingalytics offers the tools you need to slice and dice your data. Maybe you
 want to see the number of retweets your clients get over time. Or maybe you
@@ -55,6 +57,7 @@ Contents
    caches
    widgets
    formats
+   frontend
 
 .. _Adly: http://adly.com/
 .. _MIT License: http://www.opensource.org/licenses/mit-license

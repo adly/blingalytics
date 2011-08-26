@@ -62,6 +62,9 @@ class LocalCache(caches.Cache):
         self.database = database
         self._create_metadata_table()
 
+    def __repr__(self):
+        return '<LocalCache %s>' % self.database
+
     @connection
     def _create_metadata_table(self):
         self.conn.execute('''

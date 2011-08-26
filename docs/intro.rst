@@ -134,7 +134,91 @@ Let's try sorting and limiting the data::
 There are plenty more options for retrieving specific rows. See
 :meth:`Report.report_rows <blingalytics.base.Report.report_rows>` for more.
 
-Three: pull real data
+Three: put it in the browser
+----------------------------
+
+Working in the Python interpreter is nice and all, but most of us want to
+insert this thing into a beautiful website and spread it around the web. Good
+news! Blingalytics comes with the tools to pull this off in just a few lines
+of code. (For example purposes, this will be shown as a Flask_ app, but it
+should be easy enough to insert this into your favorite Python web framework.)
+
+The report app
+^^^^^^^^^^^^^^
+
+Let's assume you've already :doc:`installed Blingalytics </install>` and
+`installed Flask`_.
+
+Now we build a very basic Flask app that has two URLs: a homepage, where we'll
+display our report; and an AJAX responder for our report JavaScript to talk
+to. The :func:`report_response <blingalytics.helpers.report_response>` helper
+function makes responding to the AJAX requests easy.
+
+::
+
+    from blingalytics.helpers import report_response
+    from flask import Flask, request, render_template
+    from reports import RealerReport # import so it gets registered
+
+    app = Flask(__name__)
+
+    @app.route('/')
+    def index():
+        return render_template('index.html')
+
+    @app.route('/report/')
+    def report():
+        return report_response(request.args)
+
+    if __name__ == '__main__':
+        app.run(debug=True)
+
+The ``index`` page really just renders the template where you're going to
+implement the Blingalytics frontend. The ``report`` URL handles AJAX requests
+from the JavaScript frontend, and the
+:func:`report_response <blingalytics.helpers.report_response>` handles all the
+dirty work of parsing request parameters and interfacing with your report
+classes.
+
+The report template
+^^^^^^^^^^^^^^^^^^^
+
+The template is even easier. Just include the appropriate CSS and JavaScript
+on your page, and invoke the Blingalytics jQuery_ plugin:
+
+.. code-block:: html
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <link rel="stylesheet" href="/static/css/blingalytics.css" type="text/css" />
+    </head>
+    <body>
+      <div id="report"></div>
+      <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+      <script src="/static/js/jquery.dataTables.min.js"></script>
+      <script src="/static/js/jquery.blingalytics.js"></script>
+      <script>
+        $('#report').blingalytics({
+          'reportCodeName': 'realer_report'
+        });
+      </script>
+    </body>
+    </html>
+
+With the CSS and JavaScript in place, you just have to pass in the
+``'reportCodeName'`` option with the code name of the report you want to
+display.
+
+Partake in the beauty
+^^^^^^^^^^^^^^^^^^^^^
+
+That's it! Run your web app. For Flask, this involves running
+``python app.py`` at the command line, where ``app.py`` is the app file you
+created earlier. Then you should be able to point your browser to
+``localhost:5000`` and play with the report in the browser.
+
+Four: pull real data
 ---------------------
 
 Be patient... coming soon.
@@ -144,3 +228,7 @@ Be patient... coming soon.
 ..     This section assumes you already have a database set up, using
 ..     SQLAlchemy and Elixir to connect and describe the tables. See
 ..     :doc:`/sources/database` for details.
+
+.. _Flask: http://flask.pocoo.org/
+.. _installed Flask: http://flask.pocoo.org/docs/installation/
+.. _jQuery: http://jquery.com/

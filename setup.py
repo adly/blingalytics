@@ -43,6 +43,9 @@ setup(
         'blingalytics.caches',
         'blingalytics.sources',
         'blingalytics.utils',
+        'blingalytics.statics',
+        'blingalytics.statics.css',
+        'blingalytics.statics.js',
     ],
     classifiers=[
         'Development Status :: 4 - Beta',
