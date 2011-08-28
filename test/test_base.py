@@ -57,21 +57,21 @@ class TestReportBase(unittest.TestCase):
     def test_unique_ids(self):
         # Repeatable
         self.assertEqual(self.report.unique_id,
-            ('basic_database_report', 'd3ae564035be9619ad00'))
+            ('basic_database_report', 'faafe977b85c59058a2a'))
         self.assertEqual(self.report.unique_id,
-            ('basic_database_report', 'd3ae564035be9619ad00'))
+            ('basic_database_report', 'faafe977b85c59058a2a'))
 
         # Invalid user input produces error, does not change id
         self.report.clean_user_inputs(basic_database_report_user_is_active='bad')
         self.assertEqual(self.report.unique_id,
-            ('basic_database_report', 'd3ae564035be9619ad00'))
+            ('basic_database_report', 'faafe977b85c59058a2a'))
 
         # Updating user input updates id, and is repeatable
         self.report.clean_user_inputs(basic_database_report_user_is_active='0')
         self.assertEqual(self.report.unique_id,
-            ('basic_database_report', '1480bbd5dae933da18e3'))
+            ('basic_database_report', '00cc9e32a961519f4e7d'))
         self.assertEqual(self.report.unique_id,
-            ('basic_database_report', '1480bbd5dae933da18e3'))
+            ('basic_database_report', '00cc9e32a961519f4e7d'))
 
         # Manually setting unique id overrides everything forever and ever, always
         self.report.unique_id = ('my_unique_id', '1234')
@@ -111,7 +111,7 @@ class TestReportBase(unittest.TestCase):
         # Verify run_report
         self.report.run_report()
         args, kwargs = self.mock_cache.create_instance.call_args
-        self.assertEqual(args[:2], ('basic_database_report', 'd3ae564035be9619ad00'))
+        self.assertEqual(args[:2], ('basic_database_report', 'faafe977b85c59058a2a'))
         self.assertTrue(callable(args[2].next))
         self.assertEqual(args[3:], (self.report._get_footer, 1800))
         self.assertEqual(kwargs, {})
@@ -119,15 +119,15 @@ class TestReportBase(unittest.TestCase):
         # Verify report status methods
         self.report.is_report_started()
         self.assertEqual(self.mock_cache.is_instance_started.call_args,
-            (('basic_database_report', 'd3ae564035be9619ad00'), {}))
+            (('basic_database_report', 'faafe977b85c59058a2a'), {}))
         self.report.is_report_finished()
         self.assertEqual(self.mock_cache.is_instance_finished.call_args,
-            (('basic_database_report', 'd3ae564035be9619ad00'), {}))
+            (('basic_database_report', 'faafe977b85c59058a2a'), {}))
 
         # Verify cache-busting methods
         self.report.kill_cache()
         self.assertEqual(self.mock_cache.kill_instance_cache.call_args,
-            (('basic_database_report', 'd3ae564035be9619ad00'), {}))
+            (('basic_database_report', 'faafe977b85c59058a2a'), {}))
         self.report.kill_cache(full=True)
         self.assertEqual(self.mock_cache.kill_report_cache.call_args,
             (('basic_database_report',), {}))
@@ -135,10 +135,10 @@ class TestReportBase(unittest.TestCase):
         # Verify cached metadata methods
         self.report.report_row_count()
         self.assertEqual(self.mock_cache.instance_row_count.call_args,
-            (('basic_database_report', 'd3ae564035be9619ad00'), {}))
+            (('basic_database_report', 'faafe977b85c59058a2a'), {}))
         self.report.report_timestamp()
         self.assertEqual(self.mock_cache.instance_timestamp.call_args,
-            (('basic_database_report', 'd3ae564035be9619ad00'), {}))
+            (('basic_database_report', 'faafe977b85c59058a2a'), {}))
 
     def test_report_data_methods(self):
         # Verify header data
@@ -155,12 +155,12 @@ class TestReportBase(unittest.TestCase):
         self.mock_cache.instance_rows.return_value = []
         self.report.report_rows()
         self.assertEqual(self.mock_cache.instance_rows.call_args, (
-            ('basic_database_report', 'd3ae564035be9619ad00'),
+            ('basic_database_report', 'faafe977b85c59058a2a'),
             {'sort': ('average_widget_price', 'desc'), 'selected': None, 'limit': None, 'offset': 0, 'alpha': False},
         ))
         self.report.report_rows(selected_rows=[1, 2, 3], sort=('average_widget_price', 'asc'), limit=10, offset=10)
         self.assertEqual(self.mock_cache.instance_rows.call_args, (
-            ('basic_database_report', 'd3ae564035be9619ad00'),
+            ('basic_database_report', 'faafe977b85c59058a2a'),
             {'sort': ('average_widget_price', 'asc'), 'selected': [1, 2, 3], 'limit': 10, 'offset': 10, 'alpha': False},
         ))
 
