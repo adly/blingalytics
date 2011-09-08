@@ -31,6 +31,7 @@ if __name__ == '__main__':
 
     suite = unittest.TestLoader().loadTestsFromNames([
         'test_base',
+        'test_helpers',
         'sources.test_base',
         'sources.test_database',
         'sources.test_derived',

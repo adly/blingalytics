@@ -12,7 +12,12 @@ from test import reports
 class TestReportUtilities(unittest.TestCase):
     def setUp(self):
         # Ensure the report metaclass' catalog of reports is empty to start
+        self._old_report_catalog = base.ReportMeta.report_catalog
         base.ReportMeta.report_catalog = []
+
+    def tearDown(self):
+        # Restore the original report catalog
+        base.ReportMeta.report_catalog = self._old_report_catalog
 
     def test_get_report_by_code_name(self):
         # Couple reports to test with
