@@ -302,6 +302,8 @@ class TestFormats(unittest.TestCase):
 
         format = formats.String(label='Trunc', truncate=10)
         self.assertEqual(format.format_html('Truncated text goes here'), 'Truncat...')
+        format = formats.String(label='Trunc', truncate=2)
+        self.assertEqual(format.format_html('Truncated text goes here'), 'Tr')
 
         format = formats.String(label='Title', title=True)
         self.assertEqual(format.format_html('title cased text'), 'Title Cased Text')

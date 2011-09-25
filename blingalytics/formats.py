@@ -318,6 +318,13 @@ class String(Format):
 
     def __init__(self, title=False, truncate=None, **kwargs):
         self.title = title
+        if truncate is not None:
+            try:
+                self.truncate = int(truncate)
+            except ValueError:
+                raise ValueError('String formatter truncate value must be an integer.')
+            if self.truncate < 1:
+                raise ValueError('String formatter truncate value must be a positive integer.')
         self.truncate = truncate
         super(String, self).__init__(**kwargs)
 
@@ -330,7 +337,10 @@ class String(Format):
             value = str(value)
         if self.truncate is not None:
             if len(value) > self.truncate:
-                value = value[:self.truncate - 3] + '...'
+                if self.truncate > 3:
+                    value = value[:self.truncate - 3] + '...'
+                else:
+                    value = value[:self.truncate]
         if self.title:
             value = value.title()
         return value
