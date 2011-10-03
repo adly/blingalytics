@@ -443,6 +443,9 @@ class Sum(DatabaseColumn):
     specifying the database column to sum.
     """
     def get_query_column(self, entity):
+        if isinstance(self.entity_column, DatabaseColumn):
+            return func.sum(self.entity_column.get_query_column(entity))
+
         return func.sum(getattr(entity, self.entity_column))
 
 class Count(DatabaseColumn):
@@ -524,6 +527,44 @@ class ArrayAgg(DatabaseColumn):
     """
     def get_query_column(self, entity):
         return func.array_agg(getattr(entity, self.entity_column))
+
+class Greatest(DatabaseColumn):
+    """
+    .. note::
+
+        Using this column requires that your database have a ``greatest``
+        function.
+
+    Picks the greatest value out of the supplied list of enity column names.
+    Please see your database's docs for the ``greatest`` function's handling of
+    nulls, etc.
+    """
+    def __init__(self, *args, **kwargs):
+        assert len(args) >= 2, 'You must supply at least 2 column names to be compared.'
+        self.entity_columns = args
+        super(DatabaseColumn, self).__init__(**kwargs)
+
+    def get_query_column(self, entity):
+        return func.greatest(*(getattr(entity, c) for c in self.entity_columns))
+
+class Least(DatabaseColumn):
+    """
+    .. note::
+
+        Using this column requires that your database have a ``least``
+        function.
+
+    Picks the least value out of the supplied list of enity column names.
+    Please see your database's docs for the ``least`` function's handling of
+    nulls, etc.
+    """
+    def __init__(self, *args, **kwargs):
+        assert len(args) >= 2, 'You must supply at least 2 column names to be compared.'
+        self.entity_columns = args
+        super(DatabaseColumn, self).__init__(**kwargs)
+
+    def get_query_column(self, entity):
+        return func.least(*(getattr(entity, c) for c in self.entity_columns))
 
 class TableKeyRange(sources.KeyRange):
     """
