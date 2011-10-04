@@ -48,6 +48,7 @@ import elixir
 from sqlalchemy.sql import func
 
 from blingalytics import sources
+from blingalytics.utils.collections import OrderedDict
 
 
 QUERY_LIMIT = 250
@@ -100,11 +101,13 @@ class DatabaseSource(sources.Source):
     def _lookup_columns(self):
         # Organize the Lookup columns by the name of the column providing its
         # primary key and the entity primary key column.
-        categorized = defaultdict(list)
+        categorized = OrderedDict()
         for name, column in self._columns:
             if isinstance(column, Lookup):
                 category = (column.pk_attr, column.pk_column)
-                categorized[category].append((name, column))
+                columns = categorized.get(category, [])
+                columns.append((name, column))
+                categorized[category] = columns
         return categorized
 
     def _perform_lookups(self, staged_rows):
