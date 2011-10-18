@@ -72,3 +72,26 @@ class Value(DerivedColumn):
                 return None
             except DIVISION_BY_ZERO:
                 return decimal.Decimal('0.00')
+
+class Aggregate(DerivedColumn):
+    """
+    A column that outputs a running total of another column.
+
+    Example usage::
+
+        derived.Aggregate(lambda row: row['subs'], format=formats.Integer)
+
+    This column does not compute or output a footer.
+    """
+    def __init__(self, derive_func, **kwargs):
+        self.total = 0
+        self.derive_func = derive_func
+        super(Aggregate, self).__init__(**kwargs)
+        # Never return a footer
+        self.footer = False
+
+    def get_derived_value(self, row):
+        result = self.derive_func(row)
+        if result:
+            self.total += result
+        return self.total
