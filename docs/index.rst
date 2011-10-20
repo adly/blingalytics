@@ -4,6 +4,10 @@ Blingalytics
 About
 -----
 
+.. image:: /images/example1.png
+   :alt: Blingalytics screenshot
+   :align: right
+
 Blingalytics is an open-source Python project for building a flexible,
 powerful business reporting system.
 
