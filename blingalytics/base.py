@@ -411,6 +411,7 @@ class Report(object):
         self._init_footer()
         self.cache.create_instance(self.unique_id[0], self.unique_id[1],
             self._get_rows(), self._get_footer, self.cache_time)
+        self.report_finalize()
 
     def kill_cache(self, full=False):
         """
@@ -543,6 +544,12 @@ class Report(object):
             formatted_rows.append(formatted_row)
 
         return formatted_rows
+
+    def report_finalize(self):
+        """
+        Cleans up source columns.
+        """
+        [c.finalize() for c in self.columns_dict.values()]
 
     def report_footer(self, format='html'):
         """

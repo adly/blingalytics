@@ -95,3 +95,6 @@ class Aggregate(DerivedColumn):
         if result:
             self.total += result
         return self.total
+
+    def finalize(self):
+        self.total = 0

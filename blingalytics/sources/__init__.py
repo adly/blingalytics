@@ -277,6 +277,11 @@ class Column(object):
                     return cell
         return None
 
+    def finalize(self):
+        """
+        This is ran after the report is computed.
+        """
+
     def finalize_footer(self, total, footer):
         """
         Finalizes and returns this column's footer total.
