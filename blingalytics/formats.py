@@ -144,6 +144,8 @@ class Hidden(Format):
     could also use these yourself to, for example, pass along a URL that gets
     formatted into a nice-looking link with some front-end JavaScript.
     """
+    sort_alpha = False
+
     @property
     def header_info(self):
         info = super(Hidden, self).header_info
