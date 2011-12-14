@@ -44,7 +44,8 @@ class Value(DerivedColumn):
     By default, the footer for this column performs the same operation over
     the appropriate footer columns. This is generally the footer you want for
     a derived column, as opposed to simply summing or averaging the values in
-    the column.
+    the column. If one of the columns involved in the derive function does not
+    return a footer, this will return a total.
     """
     def __init__(self, derive_func, **kwargs):
         self.derive_func = derive_func
@@ -59,9 +60,6 @@ class Value(DerivedColumn):
         except DIVISION_BY_ZERO:
             return decimal.Decimal('0.00')
 
-    def increment_footer(self, total, cell):
-        return None
-
     def finalize_footer(self, total, footer):
         # The footer is the derive function run over the other footer columns
         if self.footer:
@@ -69,7 +67,7 @@ class Value(DerivedColumn):
                 return self.derive_func(footer)
             except TypeError:
                 # Got None for a value, so return None
-                return None
+                return total
             except DIVISION_BY_ZERO:
                 return decimal.Decimal('0.00')
 
