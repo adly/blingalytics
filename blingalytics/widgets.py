@@ -176,10 +176,11 @@ class DatePicker(Widget):
     def clean(self, user_input):
         """Validates the date and converts to datetime object."""
         user_input = super(DatePicker, self).clean(user_input)
-        try:
-            return datetime.strptime(user_input, self.date_format)
-        except (ValueError, TypeError):
-            raise ValidationError('Date is not in the correct format.')
+        if user_input:
+            try:
+                return datetime.strptime(user_input, self.date_format)
+            except (ValueError, TypeError):
+                raise ValidationError('Date is not in the correct format.')
 
 class Select(Widget):
     """
