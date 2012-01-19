@@ -44,7 +44,7 @@ class ValidationError(Exception):
 class Widget(object):
     """
     Base widget implementation.
-    
+
     All widgets should derive from this class. Generally, a widget class will
     define its own clean and render methods, as well as whatever related
     functionality it requires.
@@ -86,7 +86,7 @@ class Widget(object):
         Basic user input cleaning example. Subclasses will generally override
         this clean method to implement their own validation and parsing of the
         HTML form input.
-        
+
         The clean method of a subclass needs to handle the required option,
         either by calling this method using super or implementing its own
         version. If the widget is required, an empty user input should raise a
@@ -102,9 +102,16 @@ class Widget(object):
 
     def render(self):
         """
-        Renders the widget to HTML. Subclasses must implement this themselves.
+        Renders the widget to HTML. Default implementation is to render a text input.
         """
-        raise NotImplementedError
+        value = self.default() if callable(self.default) else self.default
+        return INPUT % {
+            'form_name': self.form_name,
+            'form_label': self.label,
+            'form_class': self._form_class('bl_input'),
+            'form_type': 'text',
+            'form_attrs': 'value="%s" %s' % (value if value is not None else '', self.extra_attrs),
+        }
 
 class Checkbox(Widget):
     """
