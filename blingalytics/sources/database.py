@@ -420,7 +420,9 @@ class GroupBy(DatabaseColumn):
         super(GroupBy, self).__init__(entity_column, **kwargs)
 
     def get_query_column(self, entity):
-        return getattr(entity, self.entity_column)
+        if isinstance(self.entity_column, basestring):
+            return getattr(entity, self.entity_column)
+        return self.entity_column
 
     def get_query_modifiers(self, entity):
         # If we're removing the null grouping, filter it out
@@ -430,7 +432,7 @@ class GroupBy(DatabaseColumn):
         return []
 
     def get_query_group_bys(self, entity):
-        return [getattr(entity, self.entity_column)]
+        return [self.get_query_column(entity)]
 
     def increment_footer(self, total, cell):
         # Never return a footer
