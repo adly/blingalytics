@@ -384,3 +384,18 @@ class JSON(Format):
 
     def format(self, value):
         return json.dumps(value)
+
+class Raw(Format):
+    """
+    Formatter which simply returns the value as is.
+
+    Note, this formatter may not work with the blingalytics supplied
+    report_response method since data returned by this formatter may not be
+    serializable by json. The intent of this formatter is for specialized logic
+    dealing with report results directly (like perhaps graphing results by
+    date, etc.).
+    """
+    sort_alpha = True
+
+    def format(self, value):
+        return value
