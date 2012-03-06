@@ -60,7 +60,10 @@ class Widget(object):
             self.extra_class = extra_class
 
     def get_unique_id(self, dirty_inputs):
-        return '%s|%s' % (self.form_name, dirty_inputs.get(self.form_name, ''))
+        user_input = dirty_inputs.get(self.form_name)
+        if not user_input:
+            user_input = dirty_inputs.get(self._name, '')
+        return '%s|%s' % (self.form_name, user_input)
 
     @property
     def form_name(self):
@@ -221,7 +224,11 @@ class Select(Widget):
             if re.search('[|:]', repr(val)):
                 raise ValueError("%s widget choice values can't contain '|' or ':'. Provided: %s" % (self.label, repr(val)))
             vals += '%s,' % repr(val)
-        return '%s|%s|%s' % (self.form_name, dirty_inputs.get(self.form_name, ''), vals)
+
+        user_input = dirty_inputs.get(self.form_name)
+        if not user_input:
+            user_input = dirty_inputs.get(self._name, '')
+        return '%s|%s|%s' % (self.form_name, user_input, vals)
 
     def get_choices(self):
         return self.choices() if callable(self.choices) else self.choices
