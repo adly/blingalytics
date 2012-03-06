@@ -62,7 +62,8 @@ class ReportMeta(type):
         # (in case a widget instance is saved and used in many reports)
         report_filters = []
         report_widgets = []
-        for fil_name, fil in dct.get('filters', []):
+        filters = cls._get_defined(bases, dct, 'filters', [])
+        for fil_name, fil in filters:
             filter_copy = copy.copy(fil)
             if filter_copy.widget:
                 widget_copy = copy.copy(filter_copy.widget)
@@ -74,14 +75,27 @@ class ReportMeta(type):
         dct['filters'] = report_filters
         dct['widgets'] = report_widgets
 
-        dct['keys'] = dct.get('keys', [])
-        dct['columns'] = dct.get('columns', [])
+        dct['keys'] = cls._get_defined(bases, dct, 'keys', [])
+        dct['columns'] = cls._get_defined(bases, dct, 'columns', [])
+
+        dct['category'] = cls._get_defined(bases, dct, 'category')
+        dct['database_entity'] = cls._get_defined(bases, dct, 'database_entity')
+        dct['default_sort'] = cls._get_defined(bases, dct, 'default_sort')
 
         # Keep a list of all the reports that exist
         report_cls = type.__new__(cls, name, bases, dct)
         cls.report_catalog.append(report_cls)
 
         return report_cls
+
+    @staticmethod
+    def _get_defined(bases, dct, name, default=None):
+        if name in dct:
+            return dct.get(name)
+        for base in bases:
+            if hasattr(base, name):
+                return getattr(base, name)
+        return default
 
 class Report(object):
     """
