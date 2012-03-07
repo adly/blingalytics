@@ -64,48 +64,58 @@ class RedisCache(caches.Cache):
         keys.add('%s:' % table_name)
 
         # Pipeline the insert operations for speed
-        p = self.conn.pipeline(False)
+        try:
+            p = self.conn.pipeline(False)
 
-        for row_id, row in enumerate(rows):
-            p.hmset('%s:%s' % (table_name, row_id), encode_dict(row))
-            keys.add('%s:%s' % (table_name, row_id))
-            p.sadd('%s:ids:' % table_name, row_id)
-            keys.add('%s:ids:' % table_name)
+            for row_id, row in enumerate(rows):
+                p.hmset('%s:%s' % (table_name, row_id), encode_dict(row))
+                keys.add('%s:%s' % (table_name, row_id))
+                p.sadd('%s:ids:' % table_name, row_id)
+                keys.add('%s:ids:' % table_name)
 
-            # Index the row
-            key = '%s:index:%s:' % (table_name, row_id)
-            data = {}
-            for name, value in row.iteritems():
-                t = type(value)
-                if t is unicode:
-                    data[name] = value.encode('utf-8')
-                elif t is Decimal:
-                    data[name] = float(value)
-                elif t in (int, float, long, str):
-                    data[name] = value
-                else:
-                    data[name] = str(value)
-            p.hmset(key, data)
-            keys.add(key)
+                # Index the row
+                key = '%s:index:%s:' % (table_name, row_id)
+                data = {}
+                for name, value in row.iteritems():
+                    t = type(value)
+                    if t is unicode:
+                        data[name] = value.encode('utf-8')
+                    elif t is Decimal:
+                        data[name] = float(value)
+                    elif t in (int, float, long, str):
+                        data[name] = value
+                    else:
+                        data[name] = str(value)
+                p.hmset(key, data)
+                keys.add(key)
 
-        # Table footer
-        if footer:
-            footer_row = encode_dict(footer() or {})
-            p.hmset('%s:footer:' % table_name, footer_row)
-            keys.add('%s:footer:' % table_name)
+            # Table footer
+            if footer:
+                footer_row = encode_dict(footer() or {})
+                p.hmset('%s:footer:' % table_name, footer_row)
+                keys.add('%s:footer:' % table_name)
 
-        # mark that the table is done.
-        p.set('%s:_done:' % table_name, 'done')
-        keys.add('%s:_done:' % table_name)
+            # mark that the table is done.
+            p.set('%s:_done:' % table_name, 'done')
+            keys.add('%s:_done:' % table_name)
 
-        # Table expiration.
-        if expire:
-            for key in keys:
-                p.expire(key, expire)
+            # Table expiration.
+            if expire:
+                for key in keys:
+                    p.expire(key, expire)
 
-        # Release the table lock
-        p.delete('%s:_lock:' % table_name)
-        p.execute()
+            # Release the table lock
+            p.delete('%s:_lock:' % table_name)
+            p.execute()
+        except:
+            try:
+                # failed to actually run the report, so cleanup initial cache data.
+                self.conn.delete('%s:_lock:' % table_name)
+                self.conn.delete('%s:' % table_name)
+            except:
+                # don't set a redis error mask the original exception
+                pass
+            raise
 
     def kill_instance_cache(self, report_id, instance_id):
         # Get a simple lock (see create_instantce method for details)
