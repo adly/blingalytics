@@ -181,12 +181,13 @@ class DatabaseSource(sources.Source):
 
             # Construct the query
             q = elixir.session.query(*query_columns)
-            for query_modifier in query_modifiers:
-                q = query_modifier(q)
             for query_filter in itertools.chain(table_wide_filters, query_filters):
+                query_modifiers += query_filter.get_query_modifiers(entity, clean_inputs)
                 filter_arg = query_filter.get_filter(entity, clean_inputs)
                 if filter_arg is not None:
                     q = q.filter(filter_arg)
+            for query_modifier in query_modifiers:
+                q = query_modifier(q)
             q = q.order_by(*query_group_bys)
             q = q.group_by(*query_group_bys)
 
@@ -279,6 +280,10 @@ class QueryFilter(sources.Filter):
     def __init__(self, filter_func, **kwargs):
         self.filter_func = filter_func
         super(QueryFilter, self).__init__(**kwargs)
+
+    def get_query_modifiers(self, entity, clean_inputs):
+        # Returns a list of functions to modify the query object.
+        return []
 
     def get_filter(self, entity, clean_inputs):
         # Applies the filter function to the entity to return the filter.
