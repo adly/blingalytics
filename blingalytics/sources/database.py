@@ -442,6 +442,16 @@ class GroupBy(DatabaseColumn):
         # Never return a footer
         return None
 
+class Value(DatabaseColumn):
+    """
+    Returns the column without performing any operations on it.
+
+    Note: In some databases this can't be used without the same column occuring
+    in the group by. In those cases using First may be a valid alternative.
+    """
+    def get_query_column(self, entity):
+        return getattr(entity, self.entity_column)
+
 class Sum(DatabaseColumn):
     """
     Performs a database sum aggregation. The first argument should be a string
