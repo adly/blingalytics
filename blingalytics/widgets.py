@@ -349,7 +349,7 @@ class Autocomplete(Widget):
         if user_input in (None, ''):
             return None
         try:
-            ids = [int(id.strip()) for id in user_input.split(' ')]
+            ids = [int(id.strip()) for id in user_input.split(' ') if id]
             if len(ids) > 1 and not self.multiple:
                 raise ValidationError('Multiple selections not allowed.')
             return ids
