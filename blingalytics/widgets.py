@@ -266,7 +266,8 @@ class Select(Widget):
         except (ValueError, TypeError):
             raise ValidationError('Please choose a valid option.')
         choices = self.get_choices()
-        return choices[i][0]
+        value = choices[i][0]
+        return value if value != '' else None
 
 class Multiselect(Select):
     """
