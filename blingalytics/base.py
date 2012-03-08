@@ -254,7 +254,8 @@ class Report(object):
         """
         Returns a list of this report's widgets, rendered to HTML.
         """
-        return [widget.render() for name, widget in cls.widgets]
+        results = [widget.render() for name, widget in cls.widgets]
+        return [widget for widget in results if widget]
 
     def get_widget_choices(self):
         widget_choices = {}
