@@ -234,17 +234,20 @@ class Select(Widget):
         return self.choices() if callable(self.choices) else self.choices
 
     def render(self):
-        value = self.default() if callable(self.default) else self.default
+        values = self.default() if callable(self.default) else self.default
+        if not isinstance(values, (list, tuple)):
+            values = [values]
         choices = self.get_choices()
         options = ''
         for i, (choice_value, choice_label) in enumerate(choices):
             # Handle positive/negative indexing for default value
             selected = ''
-            if value is not None:
-                if value >= 0 and value == i:
-                    selected = 'selected'
-                elif value < 0 and len(choices) + value == i:
-                    selected = 'selected'
+            if values is not None:
+                for value in values:
+                    if value >= 0 and value == i:
+                        selected = 'selected'
+                    elif value < 0 and len(choices) + value == i:
+                        selected = 'selected'
             options += SELECT_OPTION % {
                 'form_value': i,
                 'form_label': choice_label,
