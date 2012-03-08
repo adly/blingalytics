@@ -354,6 +354,14 @@ class DatabaseColumn(sources.Column):
         # Returns a list of group-by Entity.columns for the query.
         return []
 
+    def resolve_entity_column(self, entity):
+        column = self.entity_column
+        if isinstance(column, basestring):
+            column = getattr(entity, self.entity_column)
+        elif isinstance(column, DatabaseColumn):
+            column = column.get_query_column(entity)
+        return column
+
 class Lookup(sources.Column):
     """
     This column allows you to "cheat" on the no-joins rule and look up a value
@@ -425,9 +433,7 @@ class GroupBy(DatabaseColumn):
         super(GroupBy, self).__init__(entity_column, **kwargs)
 
     def get_query_column(self, entity):
-        if isinstance(self.entity_column, basestring):
-            return getattr(entity, self.entity_column)
-        return self.entity_column
+        return self.resolve_entity_column(entity)
 
     def get_query_modifiers(self, entity):
         # If we're removing the null grouping, filter it out
@@ -455,7 +461,20 @@ class Value(DatabaseColumn):
     in the group by. In those cases using First may be a valid alternative.
     """
     def get_query_column(self, entity):
-        return getattr(entity, self.entity_column)
+        return self.resolve_entity_column(entity)
+
+class Func(DatabaseColumn):
+    """
+    Wrap the specified column in an arbitrary function.
+    """
+    def __init__(self, func_name, entity_column, **kwargs):
+        self.func = func_name
+        if isinstance(self.func, basestring):
+            self.func = getattr(func, func_name)
+        super(Func, self).__init__(entity_column, **kwargs)
+
+    def get_query_column(self, entity):
+        return self.func(self.resolve_entity_column(entity))
 
 class Sum(DatabaseColumn):
     """
@@ -463,10 +482,7 @@ class Sum(DatabaseColumn):
     specifying the database column to sum.
     """
     def get_query_column(self, entity):
-        if isinstance(self.entity_column, DatabaseColumn):
-            return func.sum(self.entity_column.get_query_column(entity))
-
-        return func.sum(getattr(entity, self.entity_column))
+        return func.sum(self.resolve_entity_column(entity))
 
 class Count(DatabaseColumn):
     """
@@ -482,7 +498,7 @@ class Count(DatabaseColumn):
         super(Count, self).__init__(entity_column, **kwargs)
 
     def get_query_column(self, entity):
-        column = getattr(entity, self.entity_column)
+        column = self.resolve_entity_column(entity)
         if self._distinct:
             column = column.distinct()
         return func.count(column)
@@ -502,7 +518,7 @@ class First(DatabaseColumn):
     first argument should be a string specifying the database column.
     """
     def get_query_column(self, entity):
-        return func.first(getattr(entity, self.entity_column))
+        return func.first(self.resolve_entity_column(entity))
 
 class BoolAnd(DatabaseColumn):
     """
@@ -517,7 +533,7 @@ class BoolAnd(DatabaseColumn):
     aggregate on.
     """
     def get_query_column(self, entity):
-        return func.bool_and(getattr(entity, self.entity_column))
+        return func.bool_and(self.resolve_entity_column(entity))
 
 class BoolOr(DatabaseColumn):
     """
@@ -532,7 +548,7 @@ class BoolOr(DatabaseColumn):
     aggregate on.
     """
     def get_query_column(self, entity):
-        return func.bool_or(getattr(entity, self.entity_column))
+        return func.bool_or(self.resolve_entity_column(entity))
 
 class ArrayAgg(DatabaseColumn):
     """
@@ -546,7 +562,7 @@ class ArrayAgg(DatabaseColumn):
     a string specifying the database column to aggregate.
     """
     def get_query_column(self, entity):
-        return func.array_agg(getattr(entity, self.entity_column))
+        return func.array_agg(self.resolve_entity_column(entity))
 
 class Max(DatabaseColumn):
     """
@@ -554,7 +570,7 @@ class Max(DatabaseColumn):
     the query.
     """
     def get_query_column(self, entity):
-        return func.max(getattr(entity, self.entity_column))
+        return func.max(self.resolve_entity_column(entity))
 
 class Min(DatabaseColumn):
     """
@@ -562,7 +578,7 @@ class Min(DatabaseColumn):
     the query.
     """
     def get_query_column(self, entity):
-        return func.min(getattr(entity, self.entity_column))
+        return func.min(self.resolve_entity_column(entity))
 
 class Greatest(DatabaseColumn):
     """
