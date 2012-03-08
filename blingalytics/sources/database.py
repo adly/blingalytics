@@ -45,7 +45,7 @@ import heapq
 import itertools
 
 import elixir
-from sqlalchemy.sql import func
+from sqlalchemy.sql import cast, func
 
 from blingalytics import sources
 from blingalytics.utils.collections import OrderedDict
@@ -175,7 +175,10 @@ class DatabaseSource(sources.Source):
             # Collect the columns, modifiers, and group-bys
             for name in filter_column_names:
                 column = self._columns_dict[name]
-                query_columns.append(column.get_query_column(entity))
+                col = column.get_query_column(entity)
+                if column.cast_to:
+                    col = cast(col, column.cast_to)
+                query_columns.append(col)
                 query_modifiers += column.get_query_modifiers(entity)
                 query_group_bys += column.get_query_group_bys(entity)
 
@@ -338,8 +341,9 @@ class DatabaseColumn(sources.Column):
     """
     source = DatabaseSource
 
-    def __init__(self, entity_column, **kwargs):
+    def __init__(self, entity_column, cast_to=None, **kwargs):
         self.entity_column = entity_column
+        self.cast_to = cast_to
         super(DatabaseColumn, self).__init__(**kwargs)
 
     def get_query_column(self, entity):
