@@ -598,7 +598,7 @@ class Greatest(DatabaseColumn):
     def __init__(self, *args, **kwargs):
         assert len(args) >= 2, 'You must supply at least 2 column names to be compared.'
         self.entity_columns = args
-        super(Greatest, self).__init__(**kwargs)
+        super(Greatest, self).__init__(None, **kwargs)
 
     def get_query_column(self, entity):
         return func.greatest(*(getattr(entity, c) for c in self.entity_columns))
@@ -617,7 +617,7 @@ class Least(DatabaseColumn):
     def __init__(self, *args, **kwargs):
         assert len(args) >= 2, 'You must supply at least 2 column names to be compared.'
         self.entity_columns = args
-        super(Least, self).__init__(**kwargs)
+        super(Least, self).__init__(None, **kwargs)
 
     def get_query_column(self, entity):
         return func.least(*(getattr(entity, c) for c in self.entity_columns))
