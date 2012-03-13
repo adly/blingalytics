@@ -293,9 +293,12 @@ class Multiselect(Select):
         if user_input in (None, ''):
             return None
         try:
-            return [int(id.strip()) for id in user_input.split(' ')]
+            indexes = [int(id.strip()) for id in user_input.split(' ')]
         except (ValueError, AttributeError):
             raise ValidationError('Could not convert input to list of IDs.')
+
+        choices = self.get_choices()
+        return [choices[i][0] for i in indexes]
 
 class TimezoneSelect(Select):
     """
