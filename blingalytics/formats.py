@@ -273,6 +273,52 @@ class Integer(Format):
             return value
         return str(value)
 
+class Float(Format):
+    """
+    Formats the data as a float. This formatter accepts one additional
+    optional argument:
+
+    * ``precision``: The number of decimal places of precision that should be
+      kept for display. Defaults to ``2``.
+    * ``grouping``: Whether or not the formatted value should have groupings
+      (such as a comma in the U.S.) when output for HTML.
+
+    This formatting is based on the Python thread-level ``locale`` setting.
+    For example, in the ``'en_US'`` locale, numbers will be formatted as
+    ``'1,234'`` for HTML or ``'1234'`` for CSV. By default, the column is
+    right-aligned.
+    """
+    default_align = 'right'
+    sort_alpha = False
+
+    def __init__(self, precision=2, grouping=True, **kwargs):
+        self.precision = precision
+        self.grouping = grouping
+        super(Float, self).__init__(**kwargs)
+
+    def format_html(self, value):
+        if value is None:
+            value = 0
+        try:
+            return locale.format('%%.%df' % self.precision, value, grouping=self.grouping)
+        except TypeError:
+            raise TypeError('Value was not a float: %r' % value)
+
+    def format_csv(self, value):
+        if value is None:
+            value = 0
+        try:
+            return locale.format('%%.%df' % self.precision, value)
+        except TypeError:
+            raise TypeError('Value was not a float: %r' % value)
+
+    def format_xls(self, value):
+        if value is None:
+            value = 0
+        if self.grouping:
+            return round(value, self.precision)
+        return ('%%.%df' % self.precision) % value
+
 class Percent(Format):
     """
     Formats the data as a percent. This formatter accepts one additional
