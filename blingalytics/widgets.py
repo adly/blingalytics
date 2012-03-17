@@ -243,7 +243,6 @@ class Select(Widget):
             # Handle positive/negative indexing for default value
             selected = ''
             if values is not None:
-                print '### values: ', values
                 for value in values:
                     if value is not None:
                         if value >= 0 and value == i:
