@@ -243,11 +243,13 @@ class Select(Widget):
             # Handle positive/negative indexing for default value
             selected = ''
             if values is not None:
+                print '### values: ', values
                 for value in values:
-                    if value >= 0 and value == i:
-                        selected = 'selected'
-                    elif value < 0 and len(choices) + value == i:
-                        selected = 'selected'
+                    if value is not None:
+                        if value >= 0 and value == i:
+                            selected = 'selected'
+                        elif value < 0 and len(choices) + value == i:
+                            selected = 'selected'
             options += SELECT_OPTION % {
                 'form_value': i,
                 'form_label': choice_label,
