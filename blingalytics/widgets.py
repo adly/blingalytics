@@ -242,7 +242,7 @@ class Select(Widget):
         for i, (choice_value, choice_label) in enumerate(choices):
             # Handle positive/negative indexing for default value
             selected = ''
-            if values is not None:
+            if values is not [None]:
                 for value in values:
                     if value is not None:
                         if value >= 0 and value == i:
