@@ -265,13 +265,14 @@ class Select(Widget):
     def clean(self, user_input):
         """Validates that a choice was selected and returns its value."""
         user_input = super(Select, self).clean(user_input)
-        try:
-            i = int(user_input)
-        except (ValueError, TypeError):
-            raise ValidationError('Please choose a valid option.')
-        choices = self.get_choices()
-        value = choices[i][0]
-        return value if value != '' else None
+        if user_input is not None:
+            try:
+                i = int(user_input)
+            except (ValueError, TypeError):
+                raise ValidationError('Please choose a valid option.')
+            choices = self.get_choices()
+            value = choices[i][0]
+            return value if value != '' else None
 
 class Multiselect(Select):
     """
