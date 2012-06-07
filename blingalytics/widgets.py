@@ -157,8 +157,9 @@ class DatePicker(Widget):
       ``'first_of_month'``.
     * A callable that evaluates to any of the previous options.
     """
-    def __init__(self, date_format='%m/%d/%Y', **kwargs):
+    def __init__(self, date_format='%m/%d/%Y', end_of_day=False, **kwargs):
         self.date_format = date_format
+        self.end_of_day = end_of_day
         super(DatePicker, self).__init__(**kwargs)
 
     def render(self):
@@ -188,7 +189,11 @@ class DatePicker(Widget):
         user_input = super(DatePicker, self).clean(user_input)
         if user_input:
             try:
-                return datetime.strptime(user_input, self.date_format)
+                value = datetime.strptime(user_input, self.date_format)
+                if self.end_of_day:
+                    value = value.replace(
+                        hour=23, minute=59, second=59, microsecond=999999)
+                return value
             except (ValueError, TypeError):
                 raise ValidationError('Date is not in the correct format.')
 
