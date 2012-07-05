@@ -576,6 +576,11 @@ class Max(DatabaseColumn):
     def get_query_column(self, entity):
         return func.max(self.resolve_entity_column(entity))
 
+    def increment_footer(self, total, cell):
+        if cell > total:
+            return cell
+        return total
+
 class Min(DatabaseColumn):
     """
     Invokes the database's min() function for the supplied column when running
@@ -583,6 +588,11 @@ class Min(DatabaseColumn):
     """
     def get_query_column(self, entity):
         return func.min(self.resolve_entity_column(entity))
+
+    def increment_footer(self, total, cell):
+        if total is None or cell < total:
+            return cell;
+        return total
 
 class Greatest(DatabaseColumn):
     """
