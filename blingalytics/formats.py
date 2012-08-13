@@ -210,10 +210,14 @@ class Date(Format):
     """
     sort_alpha = True
 
+    def __init__(self, format=None, **kwargs):
+        super(Date, self).__init__(**kwargs)
+        self.format_ = format or locale.nl_langinfo(locale.D_FMT)
+
     def format(self, value):
         if value is None:
             return ''
-        return value.strftime(locale.nl_langinfo(locale.D_FMT))
+        return value.strftime(self.format_)
 
 class Month(Format):
     """
