@@ -577,7 +577,7 @@ class Max(DatabaseColumn):
         return func.max(self.resolve_entity_column(entity))
 
     def increment_footer(self, total, cell):
-        if cell > total:
+        if total is None or cell > total:
             return cell
         return total
 
