@@ -90,15 +90,16 @@ class Format(object):
     default_align = 'left'
     sort_alpha = True
 
-    def __init__(self, label=None, align=None):
+    def __init__(self, label=None, align=None, sortable=True):
         self.label = label
         self.align = align or self.default_align
+        self.sortable = sortable
 
     @property
     def header_info(self):
         info = {
             'label': self.label,
-            'sortable': True,
+            'sortable': self.sortable,
             'data_type': self.__class__.__name__.lower(),
         }
         if self.align == 'right':
