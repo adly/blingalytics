@@ -31,10 +31,10 @@ open-source project. Blingalytics is released under the `MIT License`_.
 
 setup(
     name='Blingalytics',
-    version='0.1.2dev',
-    author='Jeff Schenck, Adly Inc.',
+    version='0.1.3',
+    author='Jeff Schenck',
     author_email='jmschenck@gmail.com',
-    url='http://github.com/adly/blingalytics',
+    url='http://github.com/jeffschenck/blingalytics',
     description='Blingalytics is a tool for building reports from your data.',
     long_description=long_description,
     license='',
@@ -48,7 +48,7 @@ setup(
         'blingalytics.statics.js',
     ],
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
         'Environment :: Web Environment',
         'Programming Language :: Python',
