@@ -96,7 +96,7 @@ class LocalCache(caches.Cache):
         table_name = '%s_%s' % (report_id, instance_id)
         self.conn.execute('drop table if exists %s' % table_name)
         try:
-            first_row = rows.next()
+            first_row = next(rows)
         except StopIteration:
             pass
         else:
