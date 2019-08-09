@@ -184,7 +184,7 @@ class LocalCache(caches.Cache):
             # If we have a metadata record but no table, there were no rows
             # to cache
             return 0
-        return count.next()[0]
+        return next(count)[0]
 
     @connection
     def instance_timestamp(self, report_id, instance_id):
@@ -194,7 +194,7 @@ class LocalCache(caches.Cache):
             select created_ts from %s
             where report_id = ? and instance_id = ?
         ''' % self.METADATA_TABLE, (report_id, instance_id))
-        return timestamp.next()[0]
+        return next(timestamp)[0]
 
     @connection
     def instance_rows(self, report_id, instance_id, selected=None, sort=None, limit=None, offset=None, alpha=False):
@@ -226,4 +226,4 @@ class LocalCache(caches.Cache):
             select footer from %s
             where report_id = ? and instance_id = ?
         ''' % self.METADATA_TABLE, (report_id, instance_id))
-        return decode(footer.next()[0])
+        return decode(next(footer)[0])
