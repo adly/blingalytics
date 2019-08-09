@@ -40,6 +40,7 @@ extra report attribute to specify which table to pull the data from:
 
 """
 
+from __future__ import absolute_import
 from builtins import zip
 from past.builtins import basestring
 from builtins import object

@@ -33,6 +33,7 @@ As a merged report is processed, it will actually run the full end-to-end
 the results together based on the columns and filters in the merge report.
 """
 
+from __future__ import absolute_import
 from builtins import map
 from builtins import zip
 import heapq

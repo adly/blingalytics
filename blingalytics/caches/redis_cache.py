@@ -10,6 +10,7 @@ a simple dev environment.
 
 """
 
+from __future__ import absolute_import
 from builtins import map
 from builtins import zip
 from builtins import str

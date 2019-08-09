@@ -18,6 +18,7 @@ limitations:
 You've been warned. Great for dev, poor for everything else.
 """
 
+from __future__ import absolute_import
 from builtins import next
 from builtins import str
 from builtins import zip

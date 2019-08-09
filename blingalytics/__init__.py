@@ -13,7 +13,7 @@ retrieving your reports.
     right before you call the utility functions, or whatever — just be sure to
     do it.
 """
-
+from __future__ import absolute_import
 from collections import defaultdict
 
 from blingalytics.base import ReportMeta

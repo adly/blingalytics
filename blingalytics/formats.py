@@ -47,6 +47,7 @@ to your report's :meth:`report_rows <blingalytics.base.Report.report_rows>`
 and :meth:`report_footer <blingalytics.base.Report.report_footer>` methods.
 See the docstring and code of the base ``Format`` class for more.
 """
+from __future__ import absolute_import
 from __future__ import division
 
 from builtins import str

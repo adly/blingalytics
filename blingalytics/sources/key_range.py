@@ -3,6 +3,7 @@ The key range source provides many of the standard key ranges you'll use
 frequently. It also provides a column for outputting the values returned by
 any key range.
 """
+from __future__ import absolute_import
 from __future__ import division
 
 from past.builtins import basestring

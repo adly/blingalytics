@@ -1,10 +1,11 @@
+from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
 from builtins import next
 
 import sys
 if sys.version_info.major == 3:
-    from collections.abc import *
+    from .collections.abc import *
 else:
     from _abcoll import *
 

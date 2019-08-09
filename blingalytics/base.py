@@ -18,6 +18,7 @@ how to pull data; :doc:`/formats` for more on formatting report output; and
 :doc:`/widgets` for details on accepting user filtering options.
 """
 
+from __future__ import absolute_import
 from builtins import zip
 from builtins import object
 import copy
