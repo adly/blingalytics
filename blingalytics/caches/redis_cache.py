@@ -10,6 +10,8 @@ a simple dev environment.
 
 """
 
+from builtins import map
+from builtins import zip
 from builtins import str
 from datetime import datetime
 from decimal import Decimal
@@ -77,7 +79,7 @@ class RedisCache(caches.Cache):
                 # Index the row
                 key = '%s:index:%s:' % (table_name, row_id)
                 data = {}
-                for name, value in row.items():
+                for name, value in list(row.items()):
                     t = type(value)
                     if t is str:
                         data[name] = value.encode('utf-8')
@@ -200,11 +202,11 @@ class RedisCache(caches.Cache):
             p.hgetall('%s:%s' % (table_name, id))
 
         # Add the row ids to the rows and return them
-        rows = map(decode_dict, p.execute())
-        return map(
+        rows = list(map(decode_dict, p.execute()))
+        return list(map(
             (lambda id_row: id_row[1].__setitem__('_bling_id', id_row[0]) or id_row[1]),
-            zip(ids, rows)
-        )
+            list(zip(ids, rows))
+        ))
 
     def instance_footer(self, report_id, instance_id):
         table_name = '%s:%s' % (report_id, instance_id)

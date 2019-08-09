@@ -52,7 +52,7 @@ class MergeSource(sources.Source):
     def set_merged_reports(self, merged_reports):
         # Receive the reports to merge and instantiate them
         self._reports = {}
-        for name, merged_report in merged_reports.items():
+        for name, merged_report in list(merged_reports.items()):
             # TODO: Handle instantiation from dicts
             # if isinstance(merged_report, dict):
             #     ReportMeta.
@@ -91,7 +91,7 @@ class MergeSource(sources.Source):
         for name, report in list(self._reports.items()):
             # Override the sub-report's filters and widgets
             sub_dirty_inputs = {}
-            for key, value in self._report.dirty_inputs.items():
+            for key, value in list(self._report.dirty_inputs.items()):
                 sub_key = key.replace(self._report.code_name, report.code_name)
                 sub_dirty_inputs[sub_key] = value
             report.clean_user_inputs(**sub_dirty_inputs)

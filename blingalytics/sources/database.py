@@ -200,10 +200,7 @@ class DatabaseSource(sources.Source):
             def rows(q, filter_column_names):
                 for row in q.yield_per(QUERY_LIMIT):
                     yield dict(list(zip(filter_column_names, row)))
-            queries.append(map(
-                lambda row: (tuple(row[name] for name, _ in self._keys), row),
-                rows(q, filter_column_names)
-            ))
+            queries.append([(tuple(row[name] for name, _ in self._keys), row) for row in rows(q, filter_column_names)])
 
         return queries
 
@@ -673,7 +670,4 @@ class TableKeyRange(sources.KeyRange):
         q = q.order_by(self.pk_column)
 
         # Return the ids
-        return map(
-            lambda row: row[0],
-            q.yield_per(QUERY_LIMIT)
-        )
+        return [row[0] for row in q.yield_per(QUERY_LIMIT)]

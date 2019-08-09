@@ -341,10 +341,7 @@ class Report(with_metaclass(ReportMeta, object)):
         # key and all other values null.
         keys = [key.get_row_keys(self.clean_inputs) for _, key in self.keys]
         key_names = [name for name, _ in self.keys]
-        return map(
-            lambda key: (key, dict(list(zip(key_names, key)))),
-            itertools.product(*keys)
-        )
+        return [(key, dict(list(zip(key_names, key)))) for key in itertools.product(*keys)]
 
     def _get_rows(self):
         # Compile all the sources' get_rows

@@ -240,7 +240,7 @@ class Select(Widget):
         '''
         choices = self.get_choices()
         vals = ''
-        for val in sorted(dict(choices).keys(), key=functools.cmp_to_key(mixed_type_cmp)):
+        for val in sorted(list(dict(choices).keys()), key=functools.cmp_to_key(mixed_type_cmp)):
             if re.search('[|:]', repr(val)):
                 raise ValueError("%s widget choice values can't contain '|' or ':'. Provided: %s" % (self.label, repr(val)))
             vals += '%s,' % repr(val)

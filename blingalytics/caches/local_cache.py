@@ -215,10 +215,7 @@ class LocalCache(caches.Cache):
             query += 'offset %d ' % offset
 
         # Decode and return the rows
-        return map(
-            lambda row: dict(list(zip(list(row.keys()), [row[0]] + list(map(decode, list(row)[1:]))))),
-            self.conn.execute(query)
-        )
+        return [dict(list(zip(list(row.keys()), [row[0]] + list(map(decode, list(row)[1:]))))) for row in self.conn.execute(query)]
 
     @connection
     def instance_footer(self, report_id, instance_id):

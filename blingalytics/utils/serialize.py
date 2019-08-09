@@ -23,13 +23,13 @@ def decode(value):
 def encode_dict(value):
     return dict(itertools.starmap(
         lambda k, v: (k, encode(v)),
-        iter(value.items())
+        iter(list(value.items()))
     ))
 
 def decode_dict(value):
     return dict(itertools.starmap(
         lambda k, v: (k, decode(v)),
-        iter(value.items())
+        iter(list(value.items()))
     ))
 
 encodings = {
