@@ -18,6 +18,8 @@ how to pull data; :doc:`/formats` for more on formatting report output; and
 :doc:`/widgets` for details on accepting user filtering options.
 """
 
+from builtins import zip
+from builtins import object
 import copy
 import hashlib
 import heapq
@@ -25,6 +27,7 @@ import itertools
 import re
 
 from blingalytics import sources, widgets
+from future.utils import with_metaclass
 
 
 DEFAULT_CACHE_TIME = 60 * 30
@@ -97,7 +100,7 @@ class ReportMeta(type):
                 return getattr(base, name)
         return default
 
-class Report(object):
+class Report(with_metaclass(ReportMeta, object)):
     """
     To write a report, you subclass this base Report class and define your own
     attributes on it. The standard list of available attributes include:
@@ -195,14 +198,13 @@ class Report(object):
     instance, you use the following methods to run it, manipulate it, and
     retrieve its data.
     """
-    __metaclass__ = ReportMeta
 
     def __init__(self, cache, merge=False):
         self.cache = cache
         
         # Grab an instance of each of the source types implied by the columns
         self.columns_dict = dict(self.columns)
-        report_sources = set([c.source for c in self.columns_dict.values()])
+        report_sources = set([c.source for c in list(self.columns_dict.values())])
         self._sources = [source(self) for source in report_sources]
 
         # Set default format labels
@@ -265,7 +267,7 @@ class Report(object):
         return widget_choices
 
     def override_widget_choices(self, **kwargs):
-        for key, value in kwargs.items():
+        for key, value in list(kwargs.items()):
             for widget in self.widgets:
                 if widget[0] == key:
                     widget[1].choices = value
@@ -327,7 +329,7 @@ class Report(object):
         # Resets all the footer tracking info
         self._footer_finalized = False
         self._footer_increment_complete = False
-        self._footer = dict([(name, None) for name in self.columns_dict.keys()])
+        self._footer = dict([(name, None) for name in list(self.columns_dict.keys())])
         self._row_count = 0
 
     def _get_key_rows(self):
@@ -336,8 +338,8 @@ class Report(object):
         # key and all other values null.
         keys = [key.get_row_keys(self.clean_inputs) for _, key in self.keys]
         key_names = [name for name, _ in self.keys]
-        return itertools.imap(
-            lambda key: (key, dict(zip(key_names, key))),
+        return map(
+            lambda key: (key, dict(list(zip(key_names, key)))),
             itertools.product(*keys)
         )
 
@@ -354,7 +356,7 @@ class Report(object):
 
         # Empty rows for each key ensures every key gets a row
         # (Use the last teed key row for the merge)
-        empty_row = dict(map(lambda a: (a[0], None), self.columns))
+        empty_row = dict([(a[0], None) for a in self.columns])
         source_rows.append(teed_key_rows[-1])
 
         # Merge the source rows into finalized rows
@@ -393,7 +395,7 @@ class Report(object):
         self._row_count += 1
 
         # Run each column's footer increment function
-        for key in self._footer.keys():
+        for key in list(self._footer.keys()):
             self._footer[key] = self.columns_dict[key] \
                 .increment_footer(self._footer[key], row[key])
 
@@ -405,7 +407,7 @@ class Report(object):
 
         # Finalize the footer if it hasn't yet been
         if not self._footer_finalized:
-            for key in self._footer.keys():
+            for key in list(self._footer.keys()):
                 self._footer[key] = self.columns_dict[key] \
                     .finalize_footer(self._footer[key], self._footer)
             self._footer_finalized = True
@@ -564,7 +566,7 @@ class Report(object):
         """
         Cleans up source columns.
         """
-        [c.finalize() for c in self.columns_dict.values()]
+        [c.finalize() for c in list(self.columns_dict.values())]
 
     def report_footer(self, format='html'):
         """

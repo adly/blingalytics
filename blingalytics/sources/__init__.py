@@ -49,12 +49,14 @@ all filters accept the following optional standard arguments:
   :doc:`/widgets` for more.
 """
 
+from past.builtins import basestring
+from builtins import object
 from decimal import Decimal
 
 from blingalytics import formats
 
 
-ADD_TYPES = (int, long, Decimal, float)
+ADD_TYPES = (int, int, Decimal, float)
 
 class Source(object):
     """

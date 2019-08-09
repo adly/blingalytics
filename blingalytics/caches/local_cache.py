@@ -18,6 +18,10 @@ limitations:
 You've been warned. Great for dev, poor for everything else.
 """
 
+from builtins import next
+from builtins import str
+from builtins import zip
+from builtins import map
 from datetime import datetime, timedelta
 import itertools
 import sqlite3
@@ -102,19 +106,19 @@ class LocalCache(caches.Cache):
         else:
             columns = ', '.join(sorted(first_row.keys()))
             self.conn.execute('create table %s (%s)' % (table_name, columns))
-            for column in first_row.keys():
+            for column in list(first_row.keys()):
                 self.conn.execute('''
                     create index ix_%s_%s on %s (%s)
                 ''' % (table_name, column, table_name, column))
 
             # Insert the rows into the table
             for row in itertools.chain([first_row], rows):
-                columns, values = zip(*row.items())
+                columns, values = list(zip(*list(row.items())))
                 columns = ','.join(columns)
                 inserts = ','.join(['?' for value in values])
                 self.conn.execute('''
                     insert into %s (%s) values (%s)
-                ''' % (table_name, columns, inserts), map(encode, values))
+                ''' % (table_name, columns, inserts), list(map(encode, values)))
 
         # Create the metadata row for the instance
         self.conn.execute('''
@@ -211,8 +215,8 @@ class LocalCache(caches.Cache):
             query += 'offset %d ' % offset
 
         # Decode and return the rows
-        return itertools.imap(
-            lambda row: dict(zip(row.keys(), [row[0]] + map(decode, list(row)[1:]))),
+        return map(
+            lambda row: dict(list(zip(list(row.keys()), [row[0]] + list(map(decode, list(row)[1:]))))),
             self.conn.execute(query)
         )
 

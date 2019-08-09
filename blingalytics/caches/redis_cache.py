@@ -10,6 +10,7 @@ a simple dev environment.
 
 """
 
+from builtins import str
 from datetime import datetime
 from decimal import Decimal
 import itertools
@@ -76,13 +77,13 @@ class RedisCache(caches.Cache):
                 # Index the row
                 key = '%s:index:%s:' % (table_name, row_id)
                 data = {}
-                for name, value in row.iteritems():
+                for name, value in row.items():
                     t = type(value)
-                    if t is unicode:
+                    if t is str:
                         data[name] = value.encode('utf-8')
                     elif t is Decimal:
                         data[name] = float(value)
-                    elif t in (int, float, long, str):
+                    elif t in (int, float, int, str):
                         data[name] = value
                     else:
                         data[name] = str(value)
@@ -199,10 +200,10 @@ class RedisCache(caches.Cache):
             p.hgetall('%s:%s' % (table_name, id))
 
         # Add the row ids to the rows and return them
-        rows = itertools.imap(decode_dict, p.execute())
-        return itertools.imap(
+        rows = map(decode_dict, p.execute())
+        return map(
             (lambda id_row: id_row[1].__setitem__('_bling_id', id_row[0]) or id_row[1]),
-            itertools.izip(ids, rows)
+            zip(ids, rows)
         )
 
     def instance_footer(self, report_id, instance_id):

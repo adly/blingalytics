@@ -22,6 +22,8 @@ documentation.
   attributes on the rendered widget. Defaults to no extra attributes.
 """
 
+from past.builtins import basestring
+from builtins import object
 from datetime import date, datetime, timedelta
 import re
 

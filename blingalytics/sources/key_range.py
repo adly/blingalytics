@@ -3,7 +3,10 @@ The key range source provides many of the standard key ranges you'll use
 frequently. It also provides a column for outputting the values returned by
 any key range.
 """
+from __future__ import division
 
+from past.builtins import basestring
+from past.utils import old_div
 from datetime import datetime, timedelta
 
 from blingalytics import sources
@@ -14,7 +17,7 @@ class KeysSource(sources.Source):
     def get_rows(self, key_rows, clean_inputs):
         for key, key_column in key_rows:
             row = {}
-            for name in self._columns_dict.keys():
+            for name in list(self._columns_dict.keys()):
                 row[name] = key_column[name]
             yield (key, row)
 
@@ -101,7 +104,7 @@ class EpochKeyRange(sources.KeyRange):
         if date > end:
             raise ValueError('Start date must be earlier than end date.')
         while date <= end:
-            yield epoch.datetime_to_hours(date) / 24
+            yield old_div(epoch.datetime_to_hours(date), 24)
             date += timedelta(days=1)
 
 class IterableKeyRange(sources.KeyRange):

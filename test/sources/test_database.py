@@ -1,3 +1,4 @@
+from builtins import str
 from decimal import Decimal
 import unittest
 

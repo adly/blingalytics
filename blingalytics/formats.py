@@ -47,7 +47,12 @@ to your report's :meth:`report_rows <blingalytics.base.Report.report_rows>`
 and :meth:`report_footer <blingalytics.base.Report.report_footer>` methods.
 See the docstring and code of the base ``Format`` class for more.
 """
+from __future__ import division
 
+from builtins import str
+from past.builtins import basestring
+from past.utils import old_div
+from builtins import object
 import json
 import locale
 
@@ -351,7 +356,7 @@ class Percent(Format):
     def format_xls(self, value):
         if value is None:
             value = 0
-        return value / 100
+        return old_div(value, 100)
 
 class String(Format):
     """
