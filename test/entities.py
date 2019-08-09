@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from builtins import object
 from decimal import Decimal
 
@@ -83,3 +84,6 @@ class Compare(object):
             self._compared = True
             self._compare_value = other
             return True
+
+    def __hash__(self):
+        return NotImplementedError

@@ -22,6 +22,7 @@ documentation.
   attributes on the rendered widget. Defaults to no extra attributes.
 """
 
+from __future__ import absolute_import
 from past.builtins import basestring, cmp
 from builtins import object
 from datetime import date, datetime, timedelta

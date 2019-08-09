@@ -5,7 +5,7 @@ from builtins import next
 
 import sys
 if sys.version_info.major == 3:
-    from .collections.abc import *
+    from collections.abc import *
 else:
     from _abcoll import *
 
@@ -193,6 +193,9 @@ class OrderedDict(dict):
         for key in iterable:
             self[key] = value
         return self
+
+    # https://stackoverflow.com/questions/53518981/inheritance-hash-sets-to-none-in-a-subclass
+    __hash__ = dict.__hash__
 
     def __eq__(self, other):
         '''od.__eq__(y) <==> od==y.  Comparison to another OD is order-sensitive
