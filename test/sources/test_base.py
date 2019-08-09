@@ -30,9 +30,9 @@ class TestSourceBases(unittest.TestCase):
 
     def test_footer_incrementing(self):
         col = sources.Column()
-        self.assert_(isinstance(col.format, formats.Hidden))
+        self.assertTrue(isinstance(col.format, formats.Hidden))
         self.assertEqual(col.sort_alpha, True)
-        self.assert_(col.footer is True)
+        self.assertTrue(col.footer is True)
         self.assertEqual(col.increment_footer(10, 2), 12)
         self.assertEqual(col.increment_footer(10, None), 10)
         self.assertEqual(col.increment_footer(None, 2), 2)
@@ -67,7 +67,7 @@ class TestSourceBases(unittest.TestCase):
         self.assertEqual(len(keys), 1)
         self.assertEqual(len(keys[0]), 2)
         self.assertEqual(keys[0][0], 'id')
-        self.assert_(isinstance(keys[0][1], key_range.SourceKeyRange))
+        self.assertTrue(isinstance(keys[0][1], key_range.SourceKeyRange))
         keys = sources.normalize_key_ranges([
             ('id', key_range.SourceKeyRange),
             ('date', key_range.EpochKeyRange('start', 'end')),
@@ -77,5 +77,5 @@ class TestSourceBases(unittest.TestCase):
         self.assertEqual(len(keys[1]), 2)
         self.assertEqual(keys[0][0], 'id')
         self.assertEqual(keys[1][0], 'date')
-        self.assert_(isinstance(keys[0][1], key_range.SourceKeyRange))
-        self.assert_(isinstance(keys[1][1], key_range.EpochKeyRange))
+        self.assertTrue(isinstance(keys[0][1], key_range.SourceKeyRange))
+        self.assertTrue(isinstance(keys[1][1], key_range.EpochKeyRange))

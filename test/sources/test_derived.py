@@ -19,7 +19,7 @@ class TestDerivedSource(unittest.TestCase):
         self.assertEqual(len(source._columns[0]), 2)
         self.assertEqual(source._columns[0][0], 'average_widget_price')
         self.assertEqual(list(source._columns_dict), ['average_widget_price'])
-        self.assert_(isinstance(source._columns[0][1], derived.Value))
+        self.assertTrue(isinstance(source._columns[0][1], derived.Value))
         self.assertEqual(source.pre_process({}), None)
         self.assertEqual(list(source.get_rows([], {})), [])
         self.assertEqual(

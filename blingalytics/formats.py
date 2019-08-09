@@ -264,7 +264,7 @@ class Integer(Format):
         if value is None:
             value = 0
         try:
-            return locale.format('%d', value, grouping=self.grouping)
+            return locale.format_string('%d', value, grouping=self.grouping)
         except TypeError:
             raise TypeError('Value was not an integer: %r' % value)
 
@@ -272,7 +272,7 @@ class Integer(Format):
         if value is None:
             value = 0
         try:
-            return locale.format('%d', value)
+            return locale.format_string('%d', value)
         except TypeError:
             raise TypeError('Value was not an integer: %r' % value)
 
@@ -310,7 +310,7 @@ class Float(Format):
         if value is None:
             value = 0
         try:
-            return locale.format('%%.%df' % self.precision, value, grouping=self.grouping)
+            return locale.format_string('%%.%df' % self.precision, value, grouping=self.grouping)
         except TypeError:
             raise TypeError('Value was not a float: %r' % value)
 
@@ -318,7 +318,7 @@ class Float(Format):
         if value is None:
             value = 0
         try:
-            return locale.format('%%.%df' % self.precision, value)
+            return locale.format_string('%%.%df' % self.precision, value)
         except TypeError:
             raise TypeError('Value was not a float: %r' % value)
 
@@ -391,6 +391,8 @@ class String(Format):
             return ''
         if isinstance(value, basestring):
             value = value.encode('utf-8')
+            if not isinstance(value, str):  # account for Python differentiation between str & bytes
+                value = str(value, 'utf-8')
         else:
             value = str(value)
         if self.truncate is not None:

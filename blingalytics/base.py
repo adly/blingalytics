@@ -32,10 +32,11 @@ from future.utils import with_metaclass
 
 DEFAULT_CACHE_TIME = 60 * 30
 
+
 def get_display_name(class_name):
     """
     Converts class names to a title case style.
-    
+
     For example, 'CelebrityApprovalReport' would become 'Celebrity Approval
     Report'.
     """
@@ -44,14 +45,16 @@ def get_display_name(class_name):
     display = display.replace('_', ' ').title()
     return display.strip()
 
+
 def get_code_name(class_name):
     """
     Converts class names to a Pythonic code name style.
-    
+
     For example, 'CelebrityApprovalReport' would be converted to
     'celebrity_approval_report'.
     """
     return get_display_name(class_name).replace(' ', '_').lower()
+
 
 class ReportMeta(type):
     report_catalog = []
@@ -230,7 +233,7 @@ class Report(with_metaclass(ReportMeta, object)):
     def unique_id(self):
         """
         A unique string for this report with the given user inputs.
-        
+
         This string uniquely identifies the given report once the set of user
         inputs has been applied. This is used as a cache key prefix.
         """
@@ -244,7 +247,7 @@ class Report(with_metaclass(ReportMeta, object)):
             widget_unique_ids.append(widget.get_unique_id(self.dirty_inputs))
         user_input_string = ":".join(sorted(widget_unique_ids))
 
-        user_input_hash = hashlib.sha1(user_input_string).hexdigest()[::2]
+        user_input_hash = hashlib.sha1(user_input_string.encode('utf-8')).hexdigest()[::2]
         return self.code_name, user_input_hash
 
     @unique_id.setter
@@ -532,7 +535,7 @@ class Report(with_metaclass(ReportMeta, object)):
         * ``format``: The type of formatting to use when processing the
           output. The built-in options are ``'html'`` or ``'csv'``. Defaults
           to ``'html'``. This is discussed in more detail in :doc:`/formats`.
-        
+
         The rows are returned as a list of lists of values. The first column
         returned by Blingalytics for any report is always a hidden column
         specifying the row's internal cache ID.

@@ -1,7 +1,13 @@
 from future import standard_library
 standard_library.install_aliases()
 from builtins import next
-from _abcoll import *
+
+import sys
+if sys.version_info.major == 3:
+    from collections.abc import *
+else:
+    from _abcoll import *
+
 try:
     from _thread import get_ident as _get_ident
 except ImportError:
