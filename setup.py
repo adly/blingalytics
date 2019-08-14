@@ -53,9 +53,12 @@ setup(
         'Environment :: Console',
         'Environment :: Web Environment',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.7',
         'License :: OSI Approved :: MIT License',
         'Topic :: Office/Business',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Scientific/Engineering',
     ],
+    install_requires=['future==0.16.0'],
 )
