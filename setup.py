@@ -60,5 +60,5 @@ setup(
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Scientific/Engineering',
     ],
-    install_requires=['future==0.16.0'],
+    install_requires=['future==0.16.0', 'redis', 'sqlalchemy', 'elixir'],
 )
