@@ -1,3 +1,6 @@
+from __future__ import absolute_import
+from __future__ import division
+from past.utils import old_div
 from decimal import Decimal
 import unittest
 
@@ -17,7 +20,7 @@ class TestDerivedSource(unittest.TestCase):
         self.assertEqual(len(source._columns[0]), 2)
         self.assertEqual(source._columns[0][0], 'average_widget_price')
         self.assertEqual(list(source._columns_dict), ['average_widget_price'])
-        self.assert_(isinstance(source._columns[0][1], derived.Value))
+        self.assertTrue(isinstance(source._columns[0][1], derived.Value))
         self.assertEqual(source.pre_process({}), None)
         self.assertEqual(list(source.get_rows([], {})), [])
         self.assertEqual(
@@ -25,7 +28,7 @@ class TestDerivedSource(unittest.TestCase):
             {'num_widgets': 2, '_sum_widget_price': Decimal('15.00'), 'othercolumn': 'string', 'average_widget_price': Decimal('7.50')})
 
     def test_derived_column(self):
-        col = derived.Value(lambda row: row['x'] / row['y'])
+        col = derived.Value(lambda row: old_div(row['x'], row['y']))
         self.assertEqual(col.get_derived_value({'x': Decimal('5.0'), 'y': Decimal('10.0')}), Decimal('0.5'))
         self.assertEqual(col.get_derived_value({'x': None, 'y': Decimal('10.0')}), None)
         self.assertEqual(col.get_derived_value({'x': Decimal('5.0'), 'y': Decimal('0.0')}), Decimal('0.00'))

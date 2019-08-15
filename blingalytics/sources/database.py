@@ -40,6 +40,10 @@ extra report attribute to specify which table to pull the data from:
 
 """
 
+from __future__ import absolute_import
+from builtins import zip
+from past.builtins import basestring
+from builtins import object
 from collections import defaultdict
 import heapq
 import itertools
@@ -113,7 +117,7 @@ class DatabaseSource(sources.Source):
     def _perform_lookups(self, staged_rows):
         # Performs lookup queries for each table for the staged rows and
         # returns the rows with lookups added
-        for (pk_attr, pk_column), lookups in self._lookup_columns().items():
+        for (pk_attr, pk_column), lookups in list(self._lookup_columns().items()):
             # Collect the pk ids from the staged rows
             pk_column_ids = [
                 row[pk_column] for key, row in staged_rows
@@ -123,15 +127,13 @@ class DatabaseSource(sources.Source):
                 continue
 
             # Collate the lookup columns into name list and lookup_attr list
-            names, columns = zip(*lookups)
-            columns = map(lambda column: column.lookup_attr, columns)
+            names, columns = list(zip(*lookups))
+            columns = [column.lookup_attr for column in columns]
 
             # Construct the bulked query
             q = elixir.session.query(pk_attr, *columns)
             q = q.filter(pk_attr.in_(pk_column_ids))
-            lookup_values = dict(map(
-                lambda row: (row[0], dict(zip(names, row[1:]))),
-                q.all()))
+            lookup_values = dict([(row[0], dict(list(zip(names, row[1:])))) for row in q.all()])
 
             # Update the staged rows with the looked-up values
             for key, row in staged_rows:
@@ -154,7 +156,7 @@ class DatabaseSource(sources.Source):
         # Provides a list of iterators over the required queries, filtered
         # appropriately, and ensures each row is emitted with the proper
         # formatting: ((key), {row})
-        key_column_names = map(lambda a: a[0], self._keys)
+        key_column_names = [a[0] for a in self._keys]
         entity = EntityProxy(self._entity, self._column_transforms(), clean_inputs)
         queries = []
 
@@ -163,7 +165,7 @@ class DatabaseSource(sources.Source):
         table_wide_filters = query_filters_by_columns.pop(None, [])
 
         # Ensure we do a query even if we have no non-key columns (odd but possible)
-        query_filters_by_columns = query_filters_by_columns.items() or [([], [])]
+        query_filters_by_columns = list(query_filters_by_columns.items()) or [([], [])]
 
         for column_names, query_filters in query_filters_by_columns:
             # Column names need to be a list to guarantee consistent ordering
@@ -198,11 +200,8 @@ class DatabaseSource(sources.Source):
             # (using generator here to make a closure for filter_column_names)
             def rows(q, filter_column_names):
                 for row in q.yield_per(QUERY_LIMIT):
-                    yield dict(zip(filter_column_names, row))
-            queries.append(itertools.imap(
-                lambda row: (tuple(row[name] for name, _ in self._keys), row),
-                rows(q, filter_column_names)
-            ))
+                    yield dict(list(zip(filter_column_names, row)))
+            queries.append([(tuple(row[name] for name, _ in self._keys), row) for row in rows(q, filter_column_names)])
 
         return queries
 
@@ -672,7 +671,4 @@ class TableKeyRange(sources.KeyRange):
         q = q.order_by(self.pk_column)
 
         # Return the ids
-        return itertools.imap(
-            lambda row: row[0],
-            q.yield_per(QUERY_LIMIT)
-        )
+        return [row[0] for row in q.yield_per(QUERY_LIMIT)]

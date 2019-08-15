@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import unittest
 
 from blingalytics.sources import static
@@ -16,7 +17,7 @@ class TestStaticSource(unittest.TestCase):
         self.assertEqual(len(source._columns[0]), 2)
         self.assertEqual(source._columns[0][0], 'id')
         self.assertEqual(list(source._columns_dict), ['id'])
-        self.assert_(isinstance(source._columns[0][1], static.Value))
+        self.assertTrue(isinstance(source._columns[0][1], static.Value))
         self.assertEqual(source.pre_process({}), None)
         self.assertEqual(list(source.get_rows([], {})), [])
         self.assertEqual(source.post_process({'othercolumn': 'stuff'}, {}),

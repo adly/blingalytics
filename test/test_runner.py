@@ -13,6 +13,7 @@ To run the tests, simply run this file::
 
 """
 
+from __future__ import absolute_import
 import decimal
 import locale
 import os

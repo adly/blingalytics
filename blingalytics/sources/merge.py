@@ -33,6 +33,9 @@ As a merged report is processed, it will actually run the full end-to-end
 the results together based on the columns and filters in the merge report.
 """
 
+from __future__ import absolute_import
+from builtins import map
+from builtins import zip
 import heapq
 
 from blingalytics import base, sources
@@ -50,7 +53,7 @@ class MergeSource(sources.Source):
     def set_merged_reports(self, merged_reports):
         # Receive the reports to merge and instantiate them
         self._reports = {}
-        for name, merged_report in merged_reports.iteritems():
+        for name, merged_report in list(merged_reports.items()):
             # TODO: Handle instantiation from dicts
             # if isinstance(merged_report, dict):
             #     ReportMeta.
@@ -74,7 +77,7 @@ class MergeSource(sources.Source):
         for row in report[1].report_rows(sort=(key, 'asc'), format='raw'):
             row_key = (row[index],)
             report_name = report[0]
-            row_dict = dict(zip(column_names, row))
+            row_dict = dict(list(zip(column_names, row)))
             yield (row_key, report_name, row_dict)
 
     def _passes_post_filters(self, row, clean_inputs):
@@ -86,10 +89,10 @@ class MergeSource(sources.Source):
 
     def get_rows(self, key_rows, clean_inputs):
         # Apply the delegated report filters
-        for name, report in self._reports.items():
+        for name, report in list(self._reports.items()):
             # Override the sub-report's filters and widgets
             sub_dirty_inputs = {}
-            for key, value in self._report.dirty_inputs.iteritems():
+            for key, value in list(self._report.dirty_inputs.items()):
                 sub_key = key.replace(self._report.code_name, report.code_name)
                 sub_dirty_inputs[sub_key] = value
             report.clean_user_inputs(**sub_dirty_inputs)
@@ -97,7 +100,7 @@ class MergeSource(sources.Source):
             report_id, instance_id = self._report.unique_id
             report.unique_id = (report_id, '%s::%s' % (instance_id, name))
 
-        empty_row = dict(map(lambda a: (a[0], None), self._columns))
+        empty_row = dict([(a[0], None) for a in self._columns])
         current_key = None
         current_row = None
 
@@ -107,7 +110,7 @@ class MergeSource(sources.Source):
             if isinstance(fil, ReportFilter):
                 excluded_reports += fil.excluded_reports(clean_inputs)
         reports = [
-            (name, report) for name, report in self._reports.items()
+            (name, report) for name, report in list(self._reports.items())
             if name not in excluded_reports
         ]
 
@@ -118,7 +121,7 @@ class MergeSource(sources.Source):
 
         # Prep the reports' rows for iteration with heapq
         # Must be in the form ((key), 'report_name', {row})
-        report_rows = map(self._report_rows_mapper, reports)
+        report_rows = list(map(self._report_rows_mapper, reports))
 
         for key, report, row in heapq.merge(*report_rows):
             if current_key and current_key == key:

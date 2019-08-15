@@ -1,7 +1,15 @@
-from datetime import date, datetime
-from decimal import Decimal
+from __future__ import absolute_import
+from builtins import map
+from future import standard_library
+from past.builtins import long, unicode
+standard_library.install_aliases()
+
+
+import base64
 import itertools
 import time
+from datetime import date, datetime
+from decimal import Decimal
 
 
 def encode(value):
@@ -19,13 +27,13 @@ def decode(value):
 def encode_dict(value):
     return dict(itertools.starmap(
         lambda k, v: (k, encode(v)),
-        value.iteritems()
+        iter(list(value.items()))
     ))
 
 def decode_dict(value):
     return dict(itertools.starmap(
         lambda k, v: (k, decode(v)),
-        value.iteritems()
+        iter(list(value.items()))
     ))
 
 encodings = {
@@ -35,13 +43,13 @@ encodings = {
     float: lambda value: 'f_' + str(value),
     bool: lambda value: 'b_' + str(int(value)),
     Decimal: lambda value: 'd_' + str(value),
-    str: lambda value: 'u_' + _escape(value.encode('base-64')),
-    unicode: lambda value: 'u_' + _escape(value.encode('utf-8').encode('base-64')),
+    str: lambda value: 'u_' + _escape(base64.encodebytes(value.encode()).decode()),
+    unicode: lambda value: 'u_' + _escape(base64.encodebytes(value.encode('utf-8')).decode()),
     datetime: lambda value: 't_%i.%06i'%(time.mktime(value.timetuple()), value.microsecond),
     date: lambda value: 'a_%i'%(time.mktime(value.timetuple())),
-    tuple: lambda value: 'l_' + '_'.join(map(lambda a: _escape(encode(a)), value)),
-    list: lambda value: 'l_' + '_'.join(map(lambda a: _escape(encode(a)), value)),
-    dict: lambda value: 'h_' + '_'.join(map(lambda a: '%s:%s' % (_escape(encode(a[0])), _escape(encode(a[1]))), value.items())),
+    tuple: lambda value: 'l_' + '_'.join([_escape(encode(a)) for a in value]),
+    list: lambda value: 'l_' + '_'.join([_escape(encode(a)) for a in value]),
+    dict: lambda value: 'h_' + '_'.join(['%s:%s' % (_escape(encode(a[0])), _escape(encode(a[1]))) for a in list(value.items())]),
 }
 
 decodings = {
@@ -50,11 +58,11 @@ decodings = {
     'f': float,
     'b': lambda value: bool(int(value)),
     'd': Decimal,
-    'u': lambda value: _unescape(value).decode('base-64').decode('utf-8'),
+    'u': lambda value: _unescape(base64.decodebytes(value)).decode('utf-8'),
     't': lambda value: datetime.fromtimestamp(float(value)),
     'a': lambda value: date.fromtimestamp(float(value)),
-    'l': lambda value: map(decode, map(_unescape, value.split('_'))),
-    'h': lambda value: dict(map(lambda a: map(decode, map(_unescape, a.split(':'))), value.split('_'))),
+    'l': lambda value: list(map(decode, list(map(_unescape, value.split('_'))))),
+    'h': lambda value: dict([list(map(decode, list(map(_unescape, a.split(':'))))) for a in value.split('_')]),
 }
 
 def _escape(value):

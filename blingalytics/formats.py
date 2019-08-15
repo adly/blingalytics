@@ -47,7 +47,13 @@ to your report's :meth:`report_rows <blingalytics.base.Report.report_rows>`
 and :meth:`report_footer <blingalytics.base.Report.report_footer>` methods.
 See the docstring and code of the base ``Format`` class for more.
 """
+from __future__ import absolute_import
+from __future__ import division
 
+from builtins import str
+from past.builtins import basestring
+from past.utils import old_div
+from builtins import object
 import json
 import locale
 
@@ -259,7 +265,7 @@ class Integer(Format):
         if value is None:
             value = 0
         try:
-            return locale.format('%d', value, grouping=self.grouping)
+            return locale.format_string('%d', value, grouping=self.grouping)
         except TypeError:
             raise TypeError('Value was not an integer: %r' % value)
 
@@ -267,7 +273,7 @@ class Integer(Format):
         if value is None:
             value = 0
         try:
-            return locale.format('%d', value)
+            return locale.format_string('%d', value)
         except TypeError:
             raise TypeError('Value was not an integer: %r' % value)
 
@@ -305,7 +311,7 @@ class Float(Format):
         if value is None:
             value = 0
         try:
-            return locale.format('%%.%df' % self.precision, value, grouping=self.grouping)
+            return locale.format_string('%%.%df' % self.precision, value, grouping=self.grouping)
         except TypeError:
             raise TypeError('Value was not a float: %r' % value)
 
@@ -313,7 +319,7 @@ class Float(Format):
         if value is None:
             value = 0
         try:
-            return locale.format('%%.%df' % self.precision, value)
+            return locale.format_string('%%.%df' % self.precision, value)
         except TypeError:
             raise TypeError('Value was not a float: %r' % value)
 
@@ -351,7 +357,7 @@ class Percent(Format):
     def format_xls(self, value):
         if value is None:
             value = 0
-        return value / 100
+        return old_div(value, 100)
 
 class String(Format):
     """
@@ -386,6 +392,8 @@ class String(Format):
             return ''
         if isinstance(value, basestring):
             value = value.encode('utf-8')
+            if not isinstance(value, str):  # account for Python differentiation between str & bytes
+                value = str(value, 'utf-8')
         else:
             value = str(value)
         if self.truncate is not None:

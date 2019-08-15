@@ -8,6 +8,7 @@ derived column to display the gross margin by performing the operation
 ``(net revenue / gross revenue * 100)``.
 """
 
+from __future__ import absolute_import
 import decimal
 
 from blingalytics import sources

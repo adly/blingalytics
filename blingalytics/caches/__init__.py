@@ -11,6 +11,8 @@ a poor choice outside of the development environment. At the moment, the
 preferred choice for deployment is :doc:`/caches/redis_cache`.
 """
 
+from __future__ import absolute_import
+from builtins import object
 class InstanceLockError(Exception):
     """Cannot secure a lock on writing the instance to cache."""
 

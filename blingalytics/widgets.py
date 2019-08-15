@@ -22,7 +22,12 @@ documentation.
   attributes on the rendered widget. Defaults to no extra attributes.
 """
 
+from __future__ import absolute_import
+from past.builtins import basestring, cmp
+from builtins import object
 from datetime import date, datetime, timedelta
+
+import functools
 import re
 
 
@@ -37,6 +42,17 @@ SELECT = '''
 SELECT_OPTION = '''
   <option value="%(form_value)s" %(form_selected)s>%(form_label)s</option>
 '''.strip()
+
+
+def mixed_type_cmp(obj, obj2):
+    try:
+        # Per Python 3's https://docs.python.org/3/whatsnew/3.0.html#ordering-comparisons we'll need to
+        # handle exception when comparing incompatible types by return 0, a hacky way to tell the key
+        # function to not sort
+        return cmp(obj, obj2)
+    except TypeError:
+        return 0
+
 
 class ValidationError(Exception):
     pass
@@ -214,8 +230,8 @@ class Select(Widget):
     option by passing in ``default=1``. If you want the last selection to
     be default, you can pass in ``default=-1``.
     """
-    def __init__(self, choices=[], **kwargs):
-        self.choices = choices
+    def __init__(self, choices=None, **kwargs):
+        self.choices = choices or []
         self._widget_class = 'bl_select'
         super(Select, self).__init__(**kwargs)
 
@@ -225,7 +241,7 @@ class Select(Widget):
         '''
         choices = self.get_choices()
         vals = ''
-        for val in sorted(dict(choices).keys()):
+        for val in sorted(list(dict(choices).keys()), key=functools.cmp_to_key(mixed_type_cmp)):
             if re.search('[|:]', repr(val)):
                 raise ValueError("%s widget choice values can't contain '|' or ':'. Provided: %s" % (self.label, repr(val)))
             vals += '%s,' % repr(val)

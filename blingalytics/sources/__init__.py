@@ -49,6 +49,9 @@ all filters accept the following optional standard arguments:
   :doc:`/widgets` for more.
 """
 
+from __future__ import absolute_import
+from past.builtins import basestring, long
+from builtins import object
 from decimal import Decimal
 
 from blingalytics import formats

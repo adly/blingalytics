@@ -18,6 +18,11 @@ limitations:
 You've been warned. Great for dev, poor for everything else.
 """
 
+from __future__ import absolute_import
+from builtins import next
+from builtins import str
+from builtins import zip
+from builtins import map
 from datetime import datetime, timedelta
 import itertools
 import sqlite3
@@ -96,25 +101,25 @@ class LocalCache(caches.Cache):
         table_name = '%s_%s' % (report_id, instance_id)
         self.conn.execute('drop table if exists %s' % table_name)
         try:
-            first_row = rows.next()
+            first_row = next(rows)
         except StopIteration:
             pass
         else:
             columns = ', '.join(sorted(first_row.keys()))
             self.conn.execute('create table %s (%s)' % (table_name, columns))
-            for column in first_row.keys():
+            for column in list(first_row.keys()):
                 self.conn.execute('''
                     create index ix_%s_%s on %s (%s)
                 ''' % (table_name, column, table_name, column))
 
             # Insert the rows into the table
             for row in itertools.chain([first_row], rows):
-                columns, values = zip(*row.items())
+                columns, values = list(zip(*list(row.items())))
                 columns = ','.join(columns)
                 inserts = ','.join(['?' for value in values])
                 self.conn.execute('''
                     insert into %s (%s) values (%s)
-                ''' % (table_name, columns, inserts), map(encode, values))
+                ''' % (table_name, columns, inserts), list(map(encode, values)))
 
         # Create the metadata row for the instance
         self.conn.execute('''
@@ -179,7 +184,7 @@ class LocalCache(caches.Cache):
             # If we have a metadata record but no table, there were no rows
             # to cache
             return 0
-        return count.next()[0]
+        return next(count)[0]
 
     @connection
     def instance_timestamp(self, report_id, instance_id):
@@ -189,7 +194,7 @@ class LocalCache(caches.Cache):
             select created_ts from %s
             where report_id = ? and instance_id = ?
         ''' % self.METADATA_TABLE, (report_id, instance_id))
-        return timestamp.next()[0]
+        return next(timestamp)[0]
 
     @connection
     def instance_rows(self, report_id, instance_id, selected=None, sort=None, limit=None, offset=None, alpha=False):
@@ -211,10 +216,7 @@ class LocalCache(caches.Cache):
             query += 'offset %d ' % offset
 
         # Decode and return the rows
-        return itertools.imap(
-            lambda row: dict(zip(row.keys(), [row[0]] + map(decode, list(row)[1:]))),
-            self.conn.execute(query)
-        )
+        return [dict(list(zip(list(row.keys()), [row[0]] + list(map(decode, list(row)[1:]))))) for row in self.conn.execute(query)]
 
     @connection
     def instance_footer(self, report_id, instance_id):
@@ -224,4 +226,4 @@ class LocalCache(caches.Cache):
             select footer from %s
             where report_id = ? and instance_id = ?
         ''' % self.METADATA_TABLE, (report_id, instance_id))
-        return decode(footer.next()[0])
+        return decode(next(footer)[0])

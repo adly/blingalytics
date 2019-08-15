@@ -10,6 +10,12 @@ a simple dev environment.
 
 """
 
+from __future__ import absolute_import
+from builtins import map
+from builtins import zip
+from builtins import str
+from past.builtins import long
+
 from datetime import datetime
 from decimal import Decimal
 import itertools
@@ -38,7 +44,7 @@ class RedisCache(caches.Cache):
     def __init__(self, **kwargs):
         """
         Accepts the same arguments as redis-py client.
-        
+
         Defaults to localhost:6379 and database 0.
         """
         self.conn = redis.Redis(**kwargs)
@@ -76,9 +82,9 @@ class RedisCache(caches.Cache):
                 # Index the row
                 key = '%s:index:%s:' % (table_name, row_id)
                 data = {}
-                for name, value in row.iteritems():
+                for name, value in list(row.items()):
                     t = type(value)
-                    if t is unicode:
+                    if t is str:
                         data[name] = value.encode('utf-8')
                     elif t is Decimal:
                         data[name] = float(value)
@@ -199,11 +205,11 @@ class RedisCache(caches.Cache):
             p.hgetall('%s:%s' % (table_name, id))
 
         # Add the row ids to the rows and return them
-        rows = itertools.imap(decode_dict, p.execute())
-        return itertools.imap(
+        rows = list(map(decode_dict, p.execute()))
+        return list(map(
             (lambda id_row: id_row[1].__setitem__('_bling_id', id_row[0]) or id_row[1]),
-            itertools.izip(ids, rows)
-        )
+            list(zip(ids, rows))
+        ))
 
     def instance_footer(self, report_id, instance_id):
         table_name = '%s:%s' % (report_id, instance_id)

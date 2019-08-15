@@ -1,3 +1,6 @@
+from __future__ import absolute_import
+from __future__ import division
+from past.utils import old_div
 from datetime import date
 
 from blingalytics import base, formats, widgets
@@ -30,7 +33,7 @@ class BasicDatabaseReport(base.Report):
         ('user_is_active', database.First('user_is_active', format=formats.Boolean(label='Active?'))),
         ('num_widgets', database.Count('widget_id', distinct=True, format=formats.Integer(label='Widgets'))),
         ('_sum_widget_price', database.Sum('widget_price')),
-        ('average_widget_price', derived.Value(lambda row: row['_sum_widget_price'] / row['num_widgets'], format=formats.Bling)),
+        ('average_widget_price', derived.Value(lambda row: old_div(row['_sum_widget_price'], row['num_widgets']), format=formats.Bling)),
     ]
     default_sort = ('average_widget_price', 'desc')
 
@@ -52,6 +55,6 @@ class BasicMergeReport(base.Report):
         ('user_id', merge.First(format=formats.Integer(label='ID', grouping=False), footer=False)),
         ('user_is_active', merge.First(format=formats.Boolean)),
         ('double_num_widgets', merge.Sum('num_widgets', format=formats.Integer)),
-        ('single_num_widgets', derived.Value(lambda row: row['double_num_widgets'] / 2, format=formats.Integer)),
+        ('single_num_widgets', derived.Value(lambda row: old_div(row['double_num_widgets'], 2), format=formats.Integer)),
     ]
     default_sort = ('single_num_widgets', 'asc')

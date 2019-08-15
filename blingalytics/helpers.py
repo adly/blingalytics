@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from builtins import str
 import json
 
 from blingalytics import get_report_by_code_name
@@ -35,7 +37,7 @@ def report_response(params, runner=None, cache=DEFAULT_CACHE):
         cache, simply provide the cache instance.
     """
     # Find and instantitate the report class
-    params = dict((k, v) for k, v in params.items())
+    params = dict((k, v) for k, v in list(params.items()))
     report_code_name = params.pop('report', None)
     if not report_code_name:
         return json.dumps({'errors': ['Report code name not specified.']})
