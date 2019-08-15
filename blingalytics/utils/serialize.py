@@ -1,11 +1,15 @@
 from __future__ import absolute_import
 from builtins import map
+from future import standard_library
 from past.builtins import long, unicode
+standard_library.install_aliases()
 
-from datetime import date, datetime
-from decimal import Decimal
+
+import base64
 import itertools
 import time
+from datetime import date, datetime
+from decimal import Decimal
 
 
 def encode(value):
