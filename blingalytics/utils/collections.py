@@ -3,11 +3,12 @@ from future import standard_library
 standard_library.install_aliases()
 from builtins import next
 
-import sys
-if sys.version_info.major == 3:
-    from collections.abc import *
-else:
+
+try:
     from _abcoll import *
+except ModuleNotFoundError:
+    from collections.abc import *
+
 
 try:
     from _thread import get_ident as _get_ident

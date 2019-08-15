@@ -50,14 +50,14 @@ all filters accept the following optional standard arguments:
 """
 
 from __future__ import absolute_import
-from past.builtins import basestring
+from past.builtins import basestring, long
 from builtins import object
 from decimal import Decimal
 
 from blingalytics import formats
 
 
-ADD_TYPES = (int, int, Decimal, float)
+ADD_TYPES = (int, long, Decimal, float)
 
 class Source(object):
     """

@@ -14,6 +14,8 @@ from __future__ import absolute_import
 from builtins import map
 from builtins import zip
 from builtins import str
+from past.builtins import long
+
 from datetime import datetime
 from decimal import Decimal
 import itertools
@@ -42,7 +44,7 @@ class RedisCache(caches.Cache):
     def __init__(self, **kwargs):
         """
         Accepts the same arguments as redis-py client.
-        
+
         Defaults to localhost:6379 and database 0.
         """
         self.conn = redis.Redis(**kwargs)
@@ -86,7 +88,7 @@ class RedisCache(caches.Cache):
                         data[name] = value.encode('utf-8')
                     elif t is Decimal:
                         data[name] = float(value)
-                    elif t in (int, float, int, str):
+                    elif t in (int, float, long, str):
                         data[name] = value
                     else:
                         data[name] = str(value)
