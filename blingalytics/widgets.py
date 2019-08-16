@@ -265,10 +265,15 @@ class Select(Widget):
             selected = ''
             if values is not None:
                 for value in values:
-                    if value is not None:
-                        if value >= 0 and value == i:
+                    try:
+                        _value = int(value)
+                    except ValueError:
+                        continue
+
+                    if _value is not None:
+                        if _value >= 0 and _value == i:
                             selected = 'selected'
-                        elif value < 0 and len(choices) + value == i:
+                        elif _value < 0 and len(choices) + _value == i:
                             selected = 'selected'
             options += SELECT_OPTION % {
                 'form_value': i,
