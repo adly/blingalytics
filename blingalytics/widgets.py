@@ -265,12 +265,12 @@ class Select(Widget):
             selected = ''
             if values is not None:
                 for value in values:
-                    try:
-                        _value = int(value)
-                    except ValueError:
-                        continue
+                    if value is not None:
+                        try:
+                            _value = int(value)
+                        except ValueError:
+                            continue
 
-                    if _value is not None:
                         if _value >= 0 and _value == i:
                             selected = 'selected'
                         elif _value < 0 and len(choices) + _value == i:
