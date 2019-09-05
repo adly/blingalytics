@@ -13,8 +13,7 @@ a simple dev environment.
 from __future__ import absolute_import
 from builtins import map
 from builtins import zip
-from builtins import str
-from past.builtins import long
+from past.builtins import long, unicode
 
 from datetime import datetime
 from decimal import Decimal
@@ -84,7 +83,7 @@ class RedisCache(caches.Cache):
                 data = {}
                 for name, value in list(row.items()):
                     t = type(value)
-                    if t is str:
+                    if t is unicode:
                         data[name] = value.encode('utf-8')
                     elif t is Decimal:
                         data[name] = float(value)

@@ -32,7 +32,7 @@ open-source project. Blingalytics is released under the `MIT License`_.
 
 setup(
     name='Blingalytics',
-    version='v0.2.0chownow',
+    version='v0.2.1chownow',
     author='Jeff Schenck',
     author_email='jmschenck@gmail.com',
     url='http://github.com/jeffschenck/blingalytics',
