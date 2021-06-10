@@ -55,6 +55,10 @@ from blingalytics import sources
 from blingalytics.utils.collections import OrderedDict
 
 
+# Constantize elixir.session to make it flexible to patch by the caller as needed.
+db_session = elixir.session
+
+
 QUERY_LIMIT = 250
 
 class DatabaseSource(sources.Source):
@@ -131,7 +135,7 @@ class DatabaseSource(sources.Source):
             columns = [column.lookup_attr for column in columns]
 
             # Construct the bulked query
-            q = elixir.session.query(pk_attr, *columns)
+            q = db_session.query(pk_attr, *columns)
             q = q.filter(pk_attr.in_(pk_column_ids))
             lookup_values = dict([(row[0], dict(list(zip(names, row[1:])))) for row in q.all()])
 
@@ -185,7 +189,7 @@ class DatabaseSource(sources.Source):
                 query_group_bys += column.get_query_group_bys(entity)
 
             # Construct the query
-            q = elixir.session.query(*query_columns)
+            q = db_session.query(*query_columns)
             for query_filter in itertools.chain(table_wide_filters, query_filters):
                 query_modifiers += query_filter.get_query_modifiers(entity, clean_inputs)
                 filter_arg = query_filter.get_filter(entity, clean_inputs)
@@ -661,7 +665,7 @@ class TableKeyRange(sources.KeyRange):
 
     def get_row_keys(self, clean_inputs):
         # Query for the primary keys
-        q = elixir.session.query(self.pk_column)
+        q = db_session.query(self.pk_column)
 
         # Apply the filters to the query
         for query_filter in self.filters:
